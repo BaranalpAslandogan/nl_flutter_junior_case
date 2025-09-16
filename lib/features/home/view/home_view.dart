@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
+import 'package:jr_case_boilerplate/features/profile/view/profile_view.dart';
 import '../../../core/models/user_model.dart';
 
 class HomeView extends StatefulWidget {
@@ -161,10 +162,21 @@ class _HomeViewState extends State<HomeView> {
                 setState(() {
                   _currentNavIndex = index;
                 });
-                
-                if (index == 0) {
-                  _showSnackBar('Anasayfadasınız');
-                }
+
+                switch (index) {
+                  case 0:
+                    _showSnackBar('Anasayfadasınız');
+                    break;
+                  case 1:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileView()),
+                    );
+                    break;
+                  default:
+                    _showSnackBar('Anasayfadasınız');
+                    break;
+                } 
               },
             ),
           ],

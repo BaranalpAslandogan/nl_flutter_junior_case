@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
-import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
 
 class CustomNavbar extends StatelessWidget {
   final int currentIndex;
@@ -54,11 +52,7 @@ class CustomNavbar extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        if (index == 1) {
-          
-        } else {
           onTap(index);
-        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

@@ -97,234 +97,237 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+      body: Container(
+        alignment: Alignment.topCenter,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            tileMode: TileMode.clamp,
+            center: Alignment.topCenter,
+            radius: 2,
+            colors: [
+              Color(0xFF3F0306 ), // Koyu yeşil
+              Color(0xFF1F0103), // Daha koyu yeşil
+              Color(0xFF090909), // Çok koyu yeşil/siyah
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              // Başlık
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(20),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Başlık
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.person_add_outlined,
+                          color: Colors.white,
+                          size: 30,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.person_add_outlined,
-                        color: Colors.white,
-                        size: 40,
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Hesap Oluştur',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Hesap Oluştur',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Kullanıcı bilgilerini girerek kaydol',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Kullanıcı bilgilerini girerek kaydol',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              
-              // Form
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    AuthRichText(
-                      labelText: 'Ad Soyad',
-                      hintText: 'Adınızı ve soyadınızı girin',
-                      prefixIcon: Icons.person_outline,
-                      controller: _nameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ad soyad gerekli';
-                        }
-                        if (value.trim().length < 2) {
-                          return 'Ad soyad en az 2 karakter olmalı';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    AuthRichText(
-                      labelText: 'E-posta',
-                      hintText: 'E-posta adresinizi girin',
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'E-posta adresi gerekli';
-                        }
-                        if (!EmailValidator.validate(value)) {
-                          return 'Geçerli bir e-posta adresi girin';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    AuthRichText(
-                      labelText: 'Şifre',
-                      hintText: 'Güçlü bir şifre oluşturun',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: _obscurePassword,
-                      controller: _passwordController,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
+                const SizedBox(height: 40),
+                
+                // Form
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      AuthRichText(
+                        hintText: 'Ad Soyad',
+                        prefixIcon: Icons.person_outline,
+                        controller: _nameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ad soyad gerekli';
+                          }
+                          if (value.trim().length < 2) {
+                            return 'Ad soyad en az 2 karakter olmalı';
+                          }
+                          return null;
                         },
                       ),
-                      validator: _validatePassword,
-                    ),
-                    const SizedBox(height: 20),
-                    AuthRichText(
-                      labelText: 'Şifre Tekrarı',
-                      hintText: 'Şifrenizi tekrar girin',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: _obscureConfirmPassword,
-                      controller: _confirmPasswordController,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
+                      const SizedBox(height: 20),
+                      AuthRichText(
+                        hintText: 'E-posta',
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'E-posta adresi gerekli';
+                          }
+                          if (!EmailValidator.validate(value)) {
+                            return 'Geçerli bir e-posta adresi girin';
+                          }
+                          return null;
                         },
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Şifre tekrarı gerekli';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Şifreler eşleşmiyor';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Kullanım koşulları checkbox
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Checkbox(
-                          value: _agreeToTerms,
-                          onChanged: (value) {
+                      const SizedBox(height: 20),
+                      AuthRichText(
+                        hintText: 'Şifre',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _obscurePassword,
+                        controller: _passwordController,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
                             setState(() {
-                              _agreeToTerms = value ?? false;
+                              _obscurePassword = !_obscurePassword;
                             });
                           },
-                          activeColor: Colors.green,
                         ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
+                        validator: _validatePassword,
+                      ),
+                      const SizedBox(height: 20),
+                      AuthRichText(
+                        hintText: 'Şifre Tekrarı',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _obscureConfirmPassword,
+                        controller: _confirmPasswordController,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                            });
+                          },
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Şifre tekrarı gerekli';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Şifreler eşleşmiyor';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Kullanım koşulları checkbox
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _agreeToTerms,
+                            onChanged: (value) {
                               setState(() {
-                                _agreeToTerms = !_agreeToTerms;
+                                _agreeToTerms = value ?? false;
                               });
                             },
-                            child: const Text(
-                              'Kullanım Koşulları ve Gizlilik Politikasını okudum ve kabul ediyorum.',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
+                            activeColor: Colors.red,
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _agreeToTerms = !_agreeToTerms;
+                                });
+                              },
+                              child: const Text(
+                                'Kullanım Koşulları ve Gizlilik Politikasını okudum ve kabul ediyorum.',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Kayıt Butonu
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Kayıt Butonu
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _register,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFCC0000),
+                            foregroundColor: Color(0xFFFFFFFF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
                           ),
-                          elevation: 2,
-                        ),
-                        child: _isLoading
-                            ? const SpinKitThreeBounce(
-                                color: Colors.white,
-                                size: 20,
-                              )
-                            : const Text(
-                                'Hesap Oluştur',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                          child: _isLoading
+                              ? const SpinKitThreeBounce(
+                                  color: Colors.white,
+                                  size: 20,
+                                )
+                              : const Text(
+                                  'Hesap Oluştur',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Giriş yap linki
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Zaten hesabınız var mı? ',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Giriş Yap',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Giriş yap linki
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Zaten hesabınız var mı? ',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Giriş Yap',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

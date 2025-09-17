@@ -50,32 +50,34 @@ class AuthRichText extends StatelessWidget {
           validator: validator,
           enabled: enabled,
           maxLines: maxLines,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.white54),
             prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(color: Colors.white24),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(color: Colors.white24),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              borderSide: const BorderSide(color: Colors.white38, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red, width: 1),
+              borderSide: const BorderSide(color: Color.fromARGB(255, 244, 113, 113), width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderSide: const BorderSide(color: Color.fromARGB(255, 195, 90, 90), width: 2),
             ),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: Colors.white10,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,

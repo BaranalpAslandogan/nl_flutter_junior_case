@@ -22,6 +22,7 @@ class CustomNavbar extends StatelessWidget {
         ),
       ),
       child: Row(
+        spacing: MediaQuery.of(context).size.width * 0.02,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildNavItem(
@@ -55,14 +56,20 @@ class CustomNavbar extends StatelessWidget {
           onTap(index);
       },
       child: Container(
+        alignment: Alignment.center,
+        width: MediaQuery.of(context).size.width * 0.4,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
+          border: BoxBorder.all(
+            color: isActive ? Colors.white : Colors.white24,
+            width: 0.6,
+          ),
           color: isActive 
-              ? Colors.white.withOpacity(0.2) 
+              ? Color.fromARGB(255, 255, 17, 0)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(50),
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
@@ -70,7 +77,7 @@ class CustomNavbar extends StatelessWidget {
               color: isActive ? Colors.white : Colors.grey[400],
               size: 28,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 6, width: 6,),
             Text(
               label,
               style: TextStyle(

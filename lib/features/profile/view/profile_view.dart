@@ -1,10 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:jr_case_boilerplate/core/widgets/bottom_sheet/offer_bottom_sheet.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
+import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
 import 'package:jr_case_boilerplate/features/upload_photo/view/upload_photo_view.dart';
 import '../../../core/models/user_model.dart';
+import 'dart:io';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _ProfileViewState extends State<ProfileView> {
   User? _currentUser;
   bool _isLoading = true;
   int _currentNavIndex = 1; // Profil sekmesi aktif
-  File? _profileImage;
+  File? _profileImage; // Profil fotoğrafı için
 
   // Örnek beğenilen filmler
   final List<Map<String, String>> _likedMovies = [
@@ -81,6 +82,66 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  // Sınırlı Teklif Popup'ını göstermek için fonksiyon
+  void _showLimitedOfferPopup() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const LimitedOfferPopup(), // Kendi widget'ınızı kullanın
+    );
+  }
+
+  // Çıkış dialog'unu göstermek için fonksiyon
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Text(
+            'Çıkış Yap',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text(
+            'Uygulamadan çıkış yapmak istediğinizden emin misiniz?',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                'İptal',
+                style: TextStyle(color: Colors.grey),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text(
+                'Çıkış Yap',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await AuthService.logout();
+
+                _showSnackBar('Başarıyla çıkış yapıldı');
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginView()),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -99,7 +160,7 @@ class _ProfileViewState extends State<ProfileView> {
           children: [
             // Header
             _buildHeader(),
-            
+
             // Ana içerik
             Expanded(
               child: SingleChildScrollView(
@@ -107,19 +168,19 @@ class _ProfileViewState extends State<ProfileView> {
                   children: [
                     // Profil bilgileri
                     _buildProfileInfo(),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Beğendiklerim bölümü
                     _buildLikedSection(),
-                    
+
                     // Alt boşluk
                     const SizedBox(height: 100),
                   ],
                 ),
               ),
             ),
-            
+
             // Bottom Navbar
             CustomNavbar(
               currentIndex: _currentNavIndex,
@@ -127,7 +188,7 @@ class _ProfileViewState extends State<ProfileView> {
                 setState(() {
                   _currentNavIndex = index;
                 });
-                
+
                 if (index == 0) {
                   // Anasayfaya dön
                   Navigator.pop(context);
@@ -154,30 +215,33 @@ class _ProfileViewState extends State<ProfileView> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.favorite,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Smart Teklif',
-                  style: TextStyle(
+          GestureDetector(
+            onTap: _showLimitedOfferPopup,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.favorite,
                     color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    size: 16,
                   ),
-                ),
-              ],
+                  SizedBox(width: 6),
+                  Text(
+                    'Sınırlı Teklif',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -188,77 +252,141 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildProfileInfo() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Column(
+      child: Row(
         children: [
-          // Profil fotoğrafı
           CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[800],
-            backgroundImage: _profileImage != null 
-                ? FileImage(_profileImage!)
-                : const NetworkImage(
-                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
-                  ) as ImageProvider,
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Kullanıcı adı
-          Text(
-            _currentUser?.name ?? 'Ayca Aydoğan',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 4),
-          
-          // Kullanıcı ID
-          Text(
-            'ID: ${_currentUser?.email.hashCode.toString().substring(0, 6) ?? "245677"}',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Fotoğraf Ekle butonu
-          ElevatedButton.icon(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const UploadPhotoView(),
+                radius: 32,
+                backgroundColor: Colors.grey[800],
+                backgroundImage: _profileImage != null
+                    ? FileImage(_profileImage!)
+                    : const NetworkImage(
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
+                      ) as ImageProvider,
+              ),
+              const SizedBox(width: 10),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Kullanıcı adı
+              Text(
+                _currentUser?.name ?? 'Ayca Aydoğan',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-              
-              if (result != null && result is File) {
-                setState(() {
-                  _profileImage = result;
-                });
-                _showSnackBar('Profil fotoğrafı güncellendi!');
-              }
-            },
-            icon: const Icon(Icons.camera_alt, color: Colors.white),
-            label: const Text(
-              'Fotoğraf Ekle',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
               ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[800],
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
+
+              const SizedBox(height: 4),
+
+              // Kullanıcı ID
+              Text(
+                'ID: ${_currentUser?.email.hashCode.toString().substring(0, 6) ?? "245677"}',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14,
+                ),
               ),
-            ),
+
+              // const SizedBox(height: 20),
+
+              // Butonlar
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //   children: [
+              //     Fotoğraf Ekle butonu
+              //     ElevatedButton.icon(
+              //       onPressed: () async {
+              //         final result = await Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //             builder: (context) => const UploadPhotoView(),
+              //           ),
+              //         );
+
+              //         if (result != null && result is File) {
+              //           setState(() {
+              //             _profileImage = result;
+              //           });
+              //           _showSnackBar('Profil fotoğrafı güncellendi!');
+              //         }
+              //       },
+              //       icon: const Icon(Icons.camera_alt, color: Colors.white),
+              //       label: const Text(
+              //         'Fotoğraf Ekle',
+              //         style: TextStyle(
+              //           color: Colors.white,
+              //           fontWeight: FontWeight.w600,
+              //         ),
+              //       ),
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.grey[800],
+              //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(25),
+              //         ),
+              //       ),
+              //     ),
+
+              //     Çıkış Yap butonu
+              //     ElevatedButton.icon(
+              //       onPressed: _showLogoutDialog,
+              //       icon: const Icon(Icons.logout, color: Colors.white),
+              //       label: const Text(
+              //         'Çıkış Yap',
+              //         style: TextStyle(
+              //           color: Colors.white,
+              //           fontWeight: FontWeight.w600,
+              //         ),
+              //       ),
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.red[700],
+              //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(25),
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+            ],
           ),
+          
+          const SizedBox(width: 10),
+
+          ElevatedButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UploadPhotoView(),
+                        ),
+                      );
+
+                      if (result != null && result is File) {
+                        setState(() {
+                          _profileImage = result;
+                        });
+                        _showSnackBar('Profil fotoğrafı güncellendi!');
+                      }
+                    },
+                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                    label: const Text(
+                      'Fotoğraf Ekle',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[800],
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                  ),
         ],
       ),
     );
@@ -279,9 +407,9 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Film kartları - 2x2 grid
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),

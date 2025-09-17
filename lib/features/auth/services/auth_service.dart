@@ -90,7 +90,7 @@ class AuthService {
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? 'Giriş sırasında bir hata oluştu.',
+          'message': data['response']['message'] ?? 'Giriş sırasında bir hata oluştu.',
         };
       }
     } catch (e) {

@@ -142,7 +142,14 @@ class MyApp extends StatelessWidget {
       title: 'ShartFlix',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFE50914),
+          primary: const Color(0xFFE50914),
+          secondary: const Color(0xFF5949E6),
+          error: const Color(0xFFF47171),
+
+        ),
+        // primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'System',
       ),
@@ -201,8 +208,20 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
-      body: Center(
+      body: Container(
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            tileMode: TileMode.clamp,
+            center: Alignment.topCenter,
+            colors: [
+              Color(0xFF3F0306 ), // Koyu yeşil
+              Color(0xFF1F0103), // Daha koyu yeşil
+              Color(0xFF090909), // Çok koyu yeşil/siyah
+            ],
+            stops: [0.0, 0.6, 1.0],
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -232,7 +251,7 @@ class _SplashScreenState extends State<SplashScreen> {
             
             // Uygulama adı
             const Text(
-              'Login App',
+              'Shartflix',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -240,15 +259,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            
-            const Text(
-              'Güvenli giriş ve kayıt sistemi',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 48),
             
             // Loading indicator
             const SizedBox(

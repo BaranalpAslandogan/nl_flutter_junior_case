@@ -15,11 +15,50 @@ class _HomeViewState extends State<HomeView> {
   User? _currentUser;
   bool _isLoading = true;
   int _currentNavIndex = 0;
+  
+  // PageView controller for horizontal swiping
+  PageController _pageController = PageController();
+  int _currentMovieIndex = 0;
+  
+  // Film verileri
+  final List<Map<String, String>> _movies = [
+    {
+      'title': 'Son Ana Kadar',
+      'description': 'Birbirine derinden bağlı iki çocukluk\narkadaşı olan Sydney ve Devam Oku',
+      'image': 'https://i.imgur.com/xMkDVab.jpeg',
+    },
+    {
+      'title': 'Aşk Hikayesi',
+      'description': 'İki kalbin birbirini bulması ve\naşkın gücünü keşfetmesi',
+      'image': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=1200&fit=crop',
+    },
+    {
+      'title': 'Macera Zamanı',
+      'description': 'Sınırları aşan bir macera ve\nkeşfedilmeyi bekleyen gizemler',
+      'image': 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1200&fit=crop',
+    },
+    {
+      'title': 'Gizli Dünya',
+      'description': 'Görünmeyen dünyanın sırları ve\nbilinmezlere doğru yolculuk',
+      'image': 'https://images.unsplash.com/photo-1489599558337-2c6b9f0e0d18?w=800&h=1200&fit=crop',
+    },
+    {
+      'title': 'Zaman Yolcusu',
+      'description': 'Geçmiş ve gelecek arasındaki\nmüthiş bir zaman yolculuğu',
+      'image': 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=1200&fit=crop',
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -63,194 +102,239 @@ class _HomeViewState extends State<HomeView> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Ana içerik alanı - SingleChildScrollView kullanıyoruz
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Hero section
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.9,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black87,
-                            Colors.black,
-                          ],
-                          stops: [0.0, 0.7, 1.0],
+      body: Stack(
+        children: [
+          // Tam ekran PageView
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentMovieIndex = index;
+              });
+            },
+            itemCount: _movies.length,
+            itemBuilder: (context, index) {
+              final movie = _movies[index];
+              return _buildMovieScreen(movie);
+            },
+          ),
+          
+          // Transparan Bottom Navbar - En üstte
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.8),
+                    Colors.black.withOpacity(0.4),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+              ),
+              child: SafeArea(
+                child: CustomNavbar(
+                  currentIndex: _currentNavIndex,
+                  onTap: (index) {
+                    setState(() {
+                      _currentNavIndex = index;
+                    });
+          
+                    switch (index) {
+                      case 0:
+                        _showSnackBar('Anasayfadasınız');
+                        break;
+                      case 1:
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ProfileView()),
+                        );
+                        break;
+                      default:
+                        _showSnackBar('Anasayfadasınız');
+                        break;
+                    } 
+                  },
+                ),
+              ),
+            ),
+          ),
+          
+          // Sayfa göstergesi (dots)
+          Positioned(
+            right: 20,
+            top: MediaQuery.of(context).size.height * 0.5,
+            child: Column(
+              children: List.generate(
+                _movies.length,
+                (index) => Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentMovieIndex == index
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMovieScreen(Map<String, String> movie) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background image - tam ekran
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(movie['image']!),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          
+          // Gradient overlay - daha yumuşak geçiş
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.3),
+                  Colors.black.withOpacity(0.7),
+                ],
+                stops: const [0.0, 0.4, 0.7, 1.0],
+              ),
+            ),
+          ),
+          
+          // Content overlay
+          Positioned(
+            bottom: 140, // Navbar için boşluk bırak
+            left: 20,
+            right: 20,
+            child: Row(
+              children: [
+                Container(
+                  alignment: Alignment.topCenter,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'N',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: Stack(
-                        children: [
-                          // Background image
-                          Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  'https://i.imgur.com/xMkDVab.jpeg',
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          // Content overlay
-                          Positioned(
-                            bottom: 40,
-                            left: 20,
-                            right: 20,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Netflix logo
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'N',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'Son Ana Kadar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Birbirine derindin bağlı iki çocukluk\narkadaşı olan Sydney ve Devam Oku',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    ),
+                    const SizedBox(width: 16),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      movie['title']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                            color: Colors.black54,
                           ),
                         ],
                       ),
                     ),
+                    
+                    // Film açıklaması
+                    Text(
+                      movie['description']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        height: 1.4,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
                   ],
                 ),
-              ),
-            ),
-            
-            // Bottom Navbar - Sabit pozisyonda
-            CustomNavbar(
-              currentIndex: _currentNavIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentNavIndex = index;
-                });
 
-                switch (index) {
-                  case 0:
-                    _showSnackBar('Anasayfadasınız');
-                    break;
-                  case 1:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProfileView()),
-                    );
-                    break;
-                  default:
-                    _showSnackBar('Anasayfadasınız');
-                    break;
-                } 
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMovieRow(List<String> imageUrls) {
-    return SizedBox(
-      height: 180,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: imageUrls.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              _showSnackBar('Film detayı yakında eklenecek');
-            },
-            child: Container(
-              width: 120,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: NetworkImage(imageUrls[index]),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.3),
-                    ],
-                  ),
-                ),
-                child: const Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
+          
+          // // Swipe indicators (sol/sağ oklar)
+          // if (_currentMovieIndex > 0)
+          //   Positioned(
+          //     left: 20,
+          //     top: MediaQuery.of(context).size.height * 0.5 - 25,
+          //     child: Container(
+          //       width: 50,
+          //       height: 50,
+          //       decoration: BoxDecoration(
+          //         color: Colors.black.withOpacity(0.5),
+          //         shape: BoxShape.circle,
+          //       ),
+          //       child: const Icon(
+          //         Icons.chevron_left,
+          //         color: Colors.white,
+          //         size: 30,
+          //       ),
+          //     ),
+          //   ),
+            
+          // if (_currentMovieIndex < _movies.length - 1)
+          //   Positioned(
+          //     right: 20,
+          //     top: MediaQuery.of(context).size.height * 0.5 - 25,
+          //     child: Container(
+          //       width: 50,
+          //       height: 50,
+          //       decoration: BoxDecoration(
+          //         color: Colors.black.withOpacity(0.5),
+          //         shape: BoxShape.circle,
+          //       ),
+          //       child: const Icon(
+          //         Icons.chevron_right,
+          //         color: Colors.white,
+          //         size: 30,
+          //       ),
+          //     ),
+          //   ),
+        ],
       ),
     );
   }

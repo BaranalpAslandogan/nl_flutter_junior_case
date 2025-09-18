@@ -13,7 +13,7 @@ class CustomNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: const BorderRadius.only(
@@ -57,12 +57,12 @@ class CustomNavbar extends StatelessWidget {
       },
       child: Container(
         alignment: Alignment.center,
-        width: MediaQuery.of(context).size.width * 0.4,
+        width: MediaQuery.of(context).size.width * 0.44,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           border: BoxBorder.all(
             color: isActive ? Colors.white : Colors.white24,
-            width: 0.6,
+            width: 0.6, 
           ),
           color: isActive 
               ? Color.fromARGB(255, 255, 17, 0)

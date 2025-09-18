@@ -1,3 +1,4 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -13,6 +14,12 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
+
+  Future<void> _discardImage() async {
+    setState(() {
+      _selectedImage = null;
+    });
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -168,189 +175,252 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
-            
-            // Ana içerik
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    
-                    // Profil ikonu
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        shape: BoxShape.circle,
+      body: Container(
+        alignment: Alignment.topCenter,
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            tileMode: TileMode.clamp,
+            center: Alignment.topCenter,
+            radius: 1.6,
+            colors: [
+              Color(0xFFAF0810 ), // Koyu yeşil
+              Color(0xFF1F0103), // Daha koyu yeşil
+              Color(0xFF090909), // Çok koyu yeşil/siyah
+            ],
+            stops: [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+              
+              // Ana içerik
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      
+                      // Profil ikonu
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.white,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Colors.white,
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Başlık
+                      const Text(
+                        'Fotoğraf Yükle',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Başlık
-                    const Text(
-                      'Fotoğraf Yükle',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                      
+                      const SizedBox(height: 8),
+                      
+                      // Alt başlık
+                      Text(
+                        'Profil fotoğrafı için görsel\nyükleyebilirsin',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Alt başlık
-                    Text(
-                      'Profil fotoğrafı için görsel\nyükleyebilirsin',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Fotoğraf seçme alanı
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
+                      
+                      const SizedBox(height: 40),
+                      
+                      // Fotoğraf seçme alanı
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: _selectedImage != null ? Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: _selectedImage != null 
+                                ? Colors.transparent 
+                                : Colors.grey[900],
+                            borderRadius: BorderRadius.circular(20),
+                            border: _selectedImage == null ? Border.all(
+                              color: Colors.grey[700]!,
+                              width: 2,
+                              style: BorderStyle.solid,
+                            ) : null,
+                            image: _selectedImage != null
+                                ? DecorationImage(
+                                    image: FileImage(_selectedImage!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _selectedImage == null
+                              ? const Icon(
+                                  Icons.add,
+                                  size: 40,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        ) :
+                       Container(
                         width: 200,
                         height: 200,
                         decoration: BoxDecoration(
-                          color: _selectedImage != null 
-                              ? Colors.transparent 
-                              : Colors.grey[900],
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.grey[700]!,
-                            width: 2,
-                            style: BorderStyle.solid,
+                            color:Colors.grey[900],
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          image: _selectedImage != null
-                              ? DecorationImage(
-                                  image: FileImage(_selectedImage!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: _selectedImage == null
-                            ? const Icon(
-                                Icons.add,
-                                size: 40,
-                                color: Colors.white,
-                              )
-                            : null,
-                      ),
-                    ),
-                    
-                    if (_selectedImage != null) ...[
-                      const SizedBox(height: 20),
-                      Text(
-                        'Fotoğraf seçildi ✓',
-                        style: TextStyle(
-                          color: Colors.green[400],
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                         child: DottedBorder(
+                            options: RoundedRectDottedBorderOptions(
+                              color: Colors.grey[700]!,
+                              dashPattern: [10, 5],
+                              strokeWidth: 1,
+                              padding: EdgeInsets.all(16), radius: Radius.circular(20),
+                            ),
+                            child: Center(
+                              child: const Icon(
+                                    Icons.add,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
+                            )
+                          ),
+                       )
                       ),
                       
-                      const SizedBox(height: 10),
-                      
-                      // Yeniden seç butonu
-                      TextButton(
-                        onPressed: _pickImage,
-                        child: const Text(
-                          'Farklı fotoğraf seç',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
+                      if (_selectedImage != null) ...[
+                        const SizedBox(height: 30),
+                        // Text(
+                        //   'Fotoğraf seçildi ✓',
+                        //   style: TextStyle(
+                        //     color: Colors.green[400],
+                        //     fontSize: 14,
+                        //     fontWeight: FontWeight.w500,
+                        //   ),
+                        // ),
+                        
+                        // const SizedBox(height: 10),
+
+                        GestureDetector(
+                          onTap: () {
+                            _discardImage();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.grey[700]!,
+                                width: 2,
+                                style: BorderStyle.solid,
+                              ),
+                              color: Colors.transparent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white70,
+                              size: 30,
+                            ),
                           ),
                         ),
+
+                        // TextButton(
+                        //   onPressed: _pickImage,
+                        //   child: const Text(
+                        //     'Farklı fotoğraf seç',
+                        //     style: TextStyle(
+                        //       color: Colors.grey,
+                        //       fontSize: 14,
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                      
+                      const Spacer(),
+                      
+                      // Alt butonlar
+                      Column(
+                        children: [
+                          // Devam Et butonu
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _selectedImage != null && !_isUploading
+                                  ? _uploadImage
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFFCC0000),
+                                foregroundColor: Color(0xFFFFFFFF),
+                                disabledBackgroundColor: Color(0xFFCC0000).withOpacity(0.5),
+                                disabledForegroundColor: Color(0xFFFFFFFF).withOpacity(0.5),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              child: _isUploading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Devam Et',
+                                      style: TextStyle(
+                                        color: _selectedImage != null ? Colors.white : Colors.white54,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Atla butonu
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'Atla',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ],
-                    
-                    const Spacer(),
-                    
-                    // Alt butonlar
-                    Column(
-                      children: [
-                        // Devam Et butonu
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _selectedImage != null && !_isUploading
-                                ? _uploadImage
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              disabledBackgroundColor: Colors.grey[800],
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            child: _isUploading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Devam Et',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Atla butonu
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Atla',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -360,6 +430,8 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () {

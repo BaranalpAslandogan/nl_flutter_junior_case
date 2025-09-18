@@ -98,18 +98,18 @@ class _RegisterViewState extends State<RegisterView> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
-        alignment: Alignment.topCenter,
+       alignment: Alignment.topCenter,
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             tileMode: TileMode.clamp,
             center: Alignment.topCenter,
-            radius: 2,
+            radius: 1.6,
             colors: [
-              Color(0xFF3F0306 ), // Koyu yeşil
+              Color(0xFFAF0810 ), // Koyu yeşil
               Color(0xFF1F0103), // Daha koyu yeşil
               Color(0xFF090909), // Çok koyu yeşil/siyah
             ],
-            stops: [0.0, 0.5, 1.0],
+            stops: [0.0, 0.3, 1.0],
           ),
         ),
         child: SafeArea(

@@ -8,16 +8,17 @@ class LimitedOfferPopup extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF4A0E0E),
-            Color(0xFF8B1538),
-            Color(0xFF2D0A0A),
-          ],
-          stops: [0.0, 0.5, 1.0],
-        ),
+        gradient: RadialGradient(
+            tileMode: TileMode.clamp,
+            center: Alignment.topCenter,
+            radius: 1.6,
+            colors: [
+              Color(0xFFAF0810 ), // Koyu yeşil
+              Color(0xFF1F0103), // Daha koyu yeşil
+              Color(0xFF090909), // Çok koyu yeşil/siyah
+            ],
+            stops: [0.0, 0.3, 1.0],
+          ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -27,7 +28,7 @@ class LimitedOfferPopup extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 5),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -43,10 +44,14 @@ class LimitedOfferPopup extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
+                      border: Border.all(
+                        color: Colors.white30,
+                        width: 1,
+                      ),
+                      color: Colors.black.withOpacity(0.07),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -78,51 +83,66 @@ class LimitedOfferPopup extends StatelessWidget {
                   
                   const SizedBox(height: 30),
                   
-                  // Alacağınız Bonuslar başlığı
-                  const Text(
-                    'Alacağınız Bonuslar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  // Alacağınız Bonuslar kutusu
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Colors.white30,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Alacağınız Bonuslar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Bonus ikonları
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildBonusIcon(
+                              icon: Icons.flash_on,
+                              label: 'Premium\nHesap',
+                              color: Color(0xFFAF0810 )
+                            ),
+                            _buildBonusIcon(
+                              icon: Icons.remove_red_eye,
+                              label: 'Daha\nFazla',
+                              color: Color(0xFFAF0810 ),
+                              isSelected: true,
+                            ),
+                            _buildBonusIcon(
+                              icon: Icons.trending_up,
+                              label: 'Öne\nÇıkarma',
+                              color: Color(0xFFAF0810 ),
+                            ),
+                            _buildBonusIcon(
+                              icon: Icons.favorite,
+                              label: 'Daha\nFazla Değeni',
+                              color: Color(0xFFAF0810 ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
-                  
-                  // Bonus ikonları
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildBonusIcon(
-                        icon: Icons.flash_on,
-                        label: 'Premium\nHesap',
-                        color: const Color(0xFF8B1538),
-                      ),
-                      _buildBonusIcon(
-                        icon: Icons.remove_red_eye,
-                        label: 'Daha\nFazla',
-                        color: const Color(0xFF8B1538),
-                        isSelected: true,
-                      ),
-                      _buildBonusIcon(
-                        icon: Icons.trending_up,
-                        label: 'Öne\nÇıkarma',
-                        color: const Color(0xFF8B1538),
-                      ),
-                      _buildBonusIcon(
-                        icon: Icons.favorite,
-                        label: 'Daha\nFazla Değeni',
-                        color: const Color(0xFF8B1538),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
                   
                   // Paket seçimi başlığı
                   const Text(
-                    'Kilidiaçmak için bir jeton paketi seçin',
+                    'Kilidi açmak için bir jeton paketi seçin',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -141,11 +161,14 @@ class LimitedOfferPopup extends StatelessWidget {
                         Expanded(
                           child: _buildTokenPackage(
                             discount: '-10%',
-                            tokens: '300',
+                            tokens: '200',
                             price: '300',
                             originalPrice: '₺99,99',
                             subtitle: 'Başlına haftalık',
-                            color: const Color(0xFF8B1538),
+                            discountColor: const Color(0xFFE74C3C),
+                            cardColor: const Color(0xFF8B1538),
+                            secondaryCardColor: Color(0xFFCC0000),
+                            context: context,
                           ),
                         ),
                         
@@ -159,8 +182,11 @@ class LimitedOfferPopup extends StatelessWidget {
                             price: '3.375',
                             originalPrice: '₺799,99',
                             subtitle: 'Başlına haftalık',
-                            color: const Color(0xFF6B46C1),
+                            discountColor: const Color(0xFF8B5CF6),
+                            cardColor: const Color(0xFF6B46C1),
+                            secondaryCardColor: Color(0xFFCC0000),
                             isRecommended: true,
+                            context: context,
                           ),
                         ),
                         
@@ -174,7 +200,10 @@ class LimitedOfferPopup extends StatelessWidget {
                             price: '1.350',
                             originalPrice: '₺399,99',
                             subtitle: 'Başlına haftalık',
-                            color: const Color(0xFF8B1538),
+                            discountColor: const Color(0xFFE74C3C),
+                            cardColor: const Color(0xFF8B1538),
+                            secondaryCardColor: Color(0xFFCC0000),
+                            context: context,
                           ),
                         ),
                       ],
@@ -184,8 +213,25 @@ class LimitedOfferPopup extends StatelessWidget {
                   const SizedBox(height: 20),
                   
                   // Tüm Jetonları Gör butonu
-                  SizedBox(
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 15),
                     width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFE74C3C),
+                          Color(0xFFC0392B),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +242,8 @@ class LimitedOfferPopup extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
@@ -235,11 +282,16 @@ class LimitedOfferPopup extends StatelessWidget {
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: isSelected ? Colors.green : color,
+            color: color,
             shape: BoxShape.circle,
-            border: isSelected 
-                ? Border.all(color: Colors.green, width: 2)
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white,
+                blurRadius: 5,
+                spreadRadius: -1,
+                offset: const Offset(0, 0),
+              ),
+            ],
           ),
           child: Icon(
             icon,
@@ -267,103 +319,144 @@ class LimitedOfferPopup extends StatelessWidget {
     required String price,
     required String originalPrice,
     required String subtitle,
-    required Color color,
+    required Color discountColor,
+    required Color cardColor,
+    required BuildContext context,
+    required Color secondaryCardColor,
     bool isRecommended = false,
   }) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(15),
-        border: isRecommended 
-            ? Border.all(color: Colors.purple, width: 2)
-            : null,
-      ),
-      child: Column(
-        children: [
-          // Discount badge
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: BoxDecoration(
-              color: isRecommended ? Colors.purple : Colors.red,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(13),
-                topRight: Radius.circular(13),
+    return Stack(
+      alignment: Alignment.topCenter,
+      clipBehavior: Clip.none,
+      children: [
+        // Ana token kartı
+        Container(
+          height: MediaQuery.of(context).size.height * 0.20,
+          width: MediaQuery.of(context).size.width * 0.27,
+          margin: const EdgeInsets.only(top: 12), // Discount etiketi için boşluk
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.topLeft,
+              radius: 2,
+              colors: [
+                cardColor,
+                secondaryCardColor
+              ],
+              stops: const [0.3, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                blurStyle: BlurStyle.outer,
+                color: Colors.white.withOpacity(1),
+                blurRadius: 5,
+                spreadRadius: -1,
+                offset: Offset(0, 0),
               ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                const SizedBox(height: 12), // Discount etiketi için boşluk
+                
+                // Token amount
+                Text(
+                  tokens,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                
+                const SizedBox(height: 4),
+                
+                // Price
+                Text(
+                  price,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                
+                const SizedBox(height: 2),
+                
+                const Text(
+                  'Jeton',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+                
+                Divider(thickness: 0.3, color: Colors.white.withOpacity(0.4),),
+                
+                // Original price and subtitle
+                Column(
+                  children: [
+                    Text(
+                      originalPrice,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+              ],
             ),
-            child: Text(
-              discount,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+          ),
+        ),
+        
+        // Discount badge - ayrı container olarak üstte
+
+          Positioned(
+            top: 0,
+            width: MediaQuery.of(context).size.width * 0.15,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.05,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(12),
+
+                boxShadow: [
+                  BoxShadow(
+                    blurStyle: BlurStyle.outer,
+                    color: Colors.white.withOpacity(1),
+                    blurRadius: 5,
+                    spreadRadius: -1,
+                    offset: Offset(0, 0),
+                  ),
+                ],
               ),
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Token amount
-          Text(
-            tokens,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 4),
-          
-          // Price
-          Text(
-            price,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 2),
-          
-          const Text(
-            'Jeton',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-            ),
-          ),
-          
-          const Spacer(),
-          
-          // Original price and subtitle
-          Column(
-            children: [
-              Text(
-                originalPrice,
+              child: Text(
+                discount,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                ),
-              ),
-            ],
+            ),
           ),
-          
-          const SizedBox(height: 12),
-        ],
-      ),
+      ],
     );
   }
 }

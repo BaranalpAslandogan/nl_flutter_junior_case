@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jr_case_boilerplate/core/extensions/assets/app_icons_ext.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
 import 'package:jr_case_boilerplate/features/profile/view/profile_view.dart';
@@ -166,33 +167,33 @@ class _HomeViewState extends State<HomeView> {
           ),
           
           // Sayfa göstergesi (dots)
-          Positioned(
-            right: 20,
-            top: MediaQuery.of(context).size.height * 0.5,
-            child: Column(
-              children: List.generate(
-                _movies.length,
-                (index) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentMovieIndex == index
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.4),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   right: 20,
+          //   top: MediaQuery.of(context).size.height * 0.5,
+          //   child: Column(
+          //     children: List.generate(
+          //       _movies.length,
+          //       (index) => Container(
+          //         width: 8,
+          //         height: 8,
+          //         margin: const EdgeInsets.symmetric(vertical: 4),
+          //         decoration: BoxDecoration(
+          //           shape: BoxShape.circle,
+          //           color: _currentMovieIndex == index
+          //               ? Colors.white
+          //               : Colors.white.withOpacity(0.4),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
   }
 
   Widget _buildMovieScreen(Map<String, String> movie) {
-    return Container(
+     return Container(
       width: double.infinity,
       height: double.infinity,
       child: Stack(
@@ -225,115 +226,92 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           
-          // Content overlay
+          // Content overlay - Netflix logosu
           Positioned(
-            bottom: 140, // Navbar için boşluk bırak
+            bottom: 175, // Navbar için boşluk bırak
             left: 20,
-            right: 20,
-            child: Row(
-              children: [
-                Container(
-                  alignment: Alignment.topCenter,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'N',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      movie['title']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                            color: Colors.black54,
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Film açıklaması
-                    Text(
-                      movie['description']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        height: 1.4,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                            color: Colors.black54,
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                  ],
+            child: Container(
+              alignment: Alignment.topCenter,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'N',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-
-
+              ),
+            ),
+          ),
+          
+          // Film bilgileri
+          Positioned(
+            bottom: 140,
+            left: 80,
+            right: 90, // Kalp butonu için alan bırak
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  movie['title']!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Film açıklaması
+                Text(
+                  movie['description']!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.4,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
           
-          // // Swipe indicators (sol/sağ oklar)
-          // if (_currentMovieIndex > 0)
-          //   Positioned(
-          //     left: 20,
-          //     top: MediaQuery.of(context).size.height * 0.5 - 25,
-          //     child: Container(
-          //       width: 50,
-          //       height: 50,
-          //       decoration: BoxDecoration(
-          //         color: Colors.black.withOpacity(0.5),
-          //         shape: BoxShape.circle,
-          //       ),
-          //       child: const Icon(
-          //         Icons.chevron_left,
-          //         color: Colors.white,
-          //         size: 30,
-          //       ),
-          //     ),
-          //   ),
-            
-          // if (_currentMovieIndex < _movies.length - 1)
-          //   Positioned(
-          //     right: 20,
-          //     top: MediaQuery.of(context).size.height * 0.5 - 25,
-          //     child: Container(
-          //       width: 50,
-          //       height: 50,
-          //       decoration: BoxDecoration(
-          //         color: Colors.black.withOpacity(0.5),
-          //         shape: BoxShape.circle,
-          //       ),
-          //       child: const Icon(
-          //         Icons.chevron_right,
-          //         color: Colors.white,
-          //         size: 30,
-          //       ),
-          //     ),
-          //   ),
+          // Kalp butonu - ayrı positioned
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.230,
+            right: MediaQuery.of(context).size.width * 0.028,
+            child: FavoriteButton(
+                    isLiked: true,
+                    onTap: () {
+                      setState(() {
+                        // _movieLikes[movieIndex] = !(_movieLikes[movieIndex] ?? false);
+                      });
+                      
+                      // final isLiked = _movieLikes[movieIndex] ?? false;
+                      // _showSnackBar(
+                      //   isLiked ? '${movie['title']} beyaz kalple beğenildi!' : '${movie['title']} beğenisi kaldırıldı!',
+                      //   isError: false,
+                      // );
+                    },
+                  ),
+          ),
         ],
       ),
     );

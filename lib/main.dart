@@ -209,17 +209,18 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        alignment: Alignment.center,
+        alignment: Alignment.topCenter,
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             tileMode: TileMode.clamp,
             center: Alignment.topCenter,
+            radius: 1.6,
             colors: [
-              Color(0xFF3F0306 ), // Koyu yeşil
+              Color(0xFFAF0810 ), // Koyu yeşil
               Color(0xFF1F0103), // Daha koyu yeşil
               Color(0xFF090909), // Çok koyu yeşil/siyah
             ],
-            stops: [0.0, 0.6, 1.0],
+            stops: [0.0, 0.3, 1.0],
           ),
         ),
         child: Column(

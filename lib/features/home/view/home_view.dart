@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
-import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
 import 'package:jr_case_boilerplate/features/auth/services/movie_service.dart';
 import 'package:jr_case_boilerplate/features/home/widgets/home_movie_list_item.dart';
 import 'package:jr_case_boilerplate/features/profile/view/profile_view.dart';
-import '../../../core/models/user_model.dart';
 import '../../../core/models/movie_item_model.dart';
 
 class HomeView extends StatefulWidget {
@@ -16,16 +14,12 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  User? _currentUser;
   bool _isLoading = true;
   bool _isLoadingMovies = false;
-  int _currentNavIndex = 0;
   int _currentPage = 1;
-  int _totalPages = 1;
   
   // PageView controller for horizontal swiping
   PageController _pageController = PageController();
-  int _currentMovieIndex = 0;
   
   // Film verileri
   List<MovieItem> _movies = [];
@@ -51,7 +45,6 @@ class _HomeViewState extends State<HomeView> {
     // Ekran boyutuna göre kategori belirle
     bool isSmallScreen = screenWidth < 360;
     bool isMediumScreen = screenWidth >= 360 && screenWidth < 414;
-    bool isLargeScreen = screenWidth >= 414;
     
     return {
       'logoSize': isSmallScreen ? 32 : isMediumScreen ? 36 : 40,
@@ -92,10 +85,8 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> _loadUserData() async {
     try {
-      final user = await AuthService.getCurrentUser();
       if (mounted) {
         setState(() {
-          _currentUser = user;
         });
       }
     } catch (e) {
@@ -120,7 +111,6 @@ class _HomeViewState extends State<HomeView> {
       if (moviesResult['success']) {
         final moviesList = moviesResult['movies'] as List;
         _currentPage = moviesResult['currentPage'] ?? 1;
-        _totalPages = moviesResult['totalPages'] ?? 1;
 
         // MovieItem listesine dönüştür
         final movies = moviesList.map((movieJson) => MovieItem.fromJson(movieJson)).toList();
@@ -424,7 +414,6 @@ class _HomeViewState extends State<HomeView> {
                 pageController: _pageController,
                 onPageChanged: (index) {
                   setState(() {
-                    _currentMovieIndex = index;
                   });
                 },
                 onShowDescription: _showDescriptionDialog,
@@ -469,7 +458,6 @@ class _HomeViewState extends State<HomeView> {
                       currentIndex: 0,
                       onTap: (index) {
                         setState(() {
-                          _currentNavIndex = index;
                         });
               
                         switch (index) {

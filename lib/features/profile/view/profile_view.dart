@@ -24,9 +24,7 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   User? _currentUser;
-  bool _isLoading = true;
   int _currentNavIndex = 1;
-  File? _profileImage;
   
   List<MovieItem> _favoriteMovies = [];
   bool _isMoviesLoading = true;
@@ -40,7 +38,6 @@ class _ProfileViewState extends State<ProfileView> {
 
   Future<void> _loadUserDataAndMovies() async {
     setState(() {
-      _isLoading = true;
       _isMoviesLoading = true;
     });
     try {
@@ -48,13 +45,11 @@ class _ProfileViewState extends State<ProfileView> {
       User _user = user['user'];
       setState(() {
         _currentUser = _user;
-        _isLoading = false;
       });
       await _loadFavoriteMovies();
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
           _isMoviesLoading = false;
         });
       }
@@ -365,7 +360,6 @@ class _ProfileViewState extends State<ProfileView> {
                 );
                 if (result != null && result is File) {
                   setState(() {
-                    _profileImage = result;
                   });
                   _refreshProfileData();
                 }
@@ -415,28 +409,7 @@ class _ProfileViewState extends State<ProfileView> {
     final titleFontSize = isMobile ? 18.0 : (isTablet ? 20.0 : 24.0);
     
     // Responsive grid ayarları
-    int crossAxisCount;
-    double childAspectRatio;
-    double crossAxisSpacing;
-    double mainAxisSpacing;
     
-    if (isDesktop) {
-      crossAxisCount = 4;
-      childAspectRatio = 0.7;
-      crossAxisSpacing = 16;
-      mainAxisSpacing = 20;
-    } else if (isTablet) {
-      crossAxisCount = 3;
-      childAspectRatio = 0.65;
-      crossAxisSpacing = 14;
-      mainAxisSpacing = 18;
-    } else {
-      crossAxisCount = 2;
-      childAspectRatio = 0.6;
-      crossAxisSpacing = 12;
-      mainAxisSpacing = 16;
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

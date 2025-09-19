@@ -10,9 +10,10 @@ class LimitedOfferPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-          gradient: RadialGradient(
+      height: MediaQuery.of(context).size.height * 0.80,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const RadialGradient(
             tileMode: TileMode.clamp,
             center: Alignment.topCenter,
             radius: 2,
@@ -29,7 +30,12 @@ class LimitedOfferPopup extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 5),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of( context).size.height * 0.02,
+              left: MediaQuery.of( context).size.width * 0.02,
+              right: MediaQuery.of( context).size.width * 0.02,
+              bottom: MediaQuery.of( context).size.height * 0.02
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -45,8 +51,8 @@ class LimitedOfferPopup extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    width: MediaQuery.of( context).size.width * 0.11,
+                    height: MediaQuery.of( context).size.width * 0.11,
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: Colors.white30,
@@ -68,7 +74,7 @@ class LimitedOfferPopup extends StatelessWidget {
           
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Column(
                 children: [
                    Text(
@@ -81,10 +87,10 @@ class LimitedOfferPopup extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(height: 30),
+                  SizedBox(height: MediaQuery.of( context).size.height * 0.03,),
                   
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(15),
@@ -104,7 +110,7 @@ class LimitedOfferPopup extends StatelessWidget {
                           ),
                         ),
                         
-                        const SizedBox(height: 20),
+                        SizedBox(height: MediaQuery.of( context).size.height * 0.02,),
                         
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -140,7 +146,7 @@ class LimitedOfferPopup extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(height: 30),
+                  SizedBox(height: MediaQuery.of( context).size.height * 0.02,),
                   
                    Text(
                     AppLocalizations.of(context)!.selectTokenPackage,
@@ -152,7 +158,7 @@ class LimitedOfferPopup extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
+                  SizedBox(height: MediaQuery.of( context).size.height * 0.02,),
                   
                   Expanded(
                     child: Row(
@@ -271,8 +277,8 @@ class LimitedOfferPopup extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 60,
-          height: 60,
+          width: MediaQuery.of( context).size.width * 0.15,
+          height: MediaQuery.of( context).size.width * 0.15,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
@@ -364,7 +370,7 @@ class LimitedOfferPopup extends StatelessWidget {
                   tokens,
                   style:  GoogleFonts.instrumentSans(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -375,7 +381,7 @@ class LimitedOfferPopup extends StatelessWidget {
                   price,
                   style:  GoogleFonts.instrumentSans(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -412,8 +418,6 @@ class LimitedOfferPopup extends StatelessWidget {
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 12),
               ],
             ),
           ),

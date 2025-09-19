@@ -27,60 +27,90 @@ class CustomNetworkImage extends StatelessWidget {
       return _buildPlaceholder(context);
     }
 
-    // IMDb URL'leri için özel kontrol
-    if (imageUrl!.contains('imdb.com') || imageUrl!.contains('media-imdb.com')) {
-      return _buildIMDbImage(context);
-    }
+    // IMDb URL'lerini dönüştür - daha güvenilir endpoint kullan
+    String processedUrl = _processImageUrl(imageUrl!);
 
-    // Normal network image
     return CachedNetworkImage(
-      imageUrl: imageUrl!,
-      httpHeaders: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
-        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-      },
+      imageUrl: processedUrl,
+      httpHeaders: _getOptimizedHeaders(processedUrl),
       fit: fit,
       width: width,
       height: height,
       placeholder: (context, url) => _buildLoadingPlaceholder(context),
-      errorWidget: (context, url, error) => _buildErrorWidget(context),
+      errorWidget: (context, url, error) {
+        print('Image load error for URL: $url');
+        print('Error: $error');
+        return _buildErrorWidget(context);
+      },
+      // Timeout ayarları
+      fadeInDuration: const Duration(milliseconds: 300),
+      fadeOutDuration: const Duration(milliseconds: 100),
+      // Cache ayarları - null check ekledik
+      memCacheHeight: height != null && height!.isFinite ? height!.toInt() : null,
+      memCacheWidth: width != null && width!.isFinite ? width!.toInt() : null,
+      maxHeightDiskCache: 1000,
+      maxWidthDiskCache: 1000,
     );
   }
 
-  Widget _buildIMDbImage(BuildContext context) {
-    // IMDb resimleri için özel widget
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        image: imageUrl != null
-            ? DecorationImage(
-                image: NetworkImage(
-                  imageUrl!,
-                  headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Referer': 'https://www.imdb.com/',
-                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                  },
-                ),
-                fit: fit,
-                onError: (exception, stackTrace) {
-                  print('IMDb image error: $exception');
-                },
-              )
-            : null,
-      ),
-      child: imageUrl == null ? _buildPlaceholder(context) : null,
-    );
+  String _processImageUrl(String url) {
+    // IMDb URL'lerini işle
+    if (url.contains('ia.media-imdb.com') || url.contains('m.media-amazon.com')) {
+      // Yeni IMDb image format'ına çevir
+      if (url.contains('ia.media-imdb.com')) {
+        // Eski format: http://ia.media-imdb.com/images/M/MV5B...
+        // Yeni format: https://m.media-amazon.com/images/M/MV5B...
+        url = url.replaceAll('http://ia.media-imdb.com', 'https://m.media-amazon.com');
+        url = url.replaceAll('https://ia.media-imdb.com', 'https://m.media-amazon.com');
+      }
+      
+      // URL'den gereksiz parametreleri temizle ve boyut ekle
+      if (!url.contains('._V1_')) {
+        // Boyut parametresi yoksa ekle (600px genişlik)
+        url = url.replaceAll('.jpg', '._V1_FMjpg_UX600_.jpg');
+        url = url.replaceAll('.png', '._V1_FMpng_UX600_.png');
+        url = url.replaceAll('.webp', '._V1_FMwebp_UX600_.webp');
+      }
+    }
+
+    // HTTP'yi HTTPS'e çevir
+    if (url.startsWith('http://')) {
+      url = url.replaceAll('http://', 'https://');
+    }
+
+    return url;
+  }
+
+  Map<String, String> _getOptimizedHeaders(String url) {
+    // IMDb/Amazon images için özel headers
+    if (url.contains('media-amazon.com') || url.contains('imdb.com')) {
+      return {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'image/webp,image/apng,image/jpeg,image/png,image/*,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://www.imdb.com/',
+        'Origin': 'https://www.imdb.com',
+        'Sec-Fetch-Dest': 'image',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'cross-site',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+      };
+    }
+
+    // Diğer image URL'leri için genel headers
+    return {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'DNT': '1',
+      'Connection': 'keep-alive',
+    };
   }
 
   Widget _buildLoadingPlaceholder(BuildContext context) {
@@ -88,7 +118,6 @@ class CustomNetworkImage extends StatelessWidget {
     final isMobile = screenWidth < 600;
     final isTablet = screenWidth >= 600 && screenWidth < 1024;
     
-    final indicatorSize = isMobile ? 24.0 : (isTablet ? 28.0 : 32.0);
     final strokeWidth = isMobile ? 2.5 : (isTablet ? 3.0 : 3.5);
 
     return Container(

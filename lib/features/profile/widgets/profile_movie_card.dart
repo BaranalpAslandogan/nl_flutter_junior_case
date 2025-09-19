@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jr_case_boilerplate/core/widgets/cached_network_image/custom_cached_network_image.dart';
 import 'package:jr_case_boilerplate/l10n/app_localizations.dart';
 import '../../../core/models/movie_item_model.dart';
 
@@ -105,7 +106,6 @@ class ProfileMovieCard extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: [
@@ -115,9 +115,13 @@ class ProfileMovieCard extends StatelessWidget {
                     offset: const Offset(0, 4),
                   ),
                 ],
-                image: DecorationImage(
-                  image: NetworkImage(movie.posterUrl!),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: CustomNetworkImage(
+                  imageUrl: movie.posterUrl,
                   fit: BoxFit.cover,
+                  width: double.infinity,
                 ),
               ),
             ),

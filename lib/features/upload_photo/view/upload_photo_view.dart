@@ -210,7 +210,6 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
 
     // Responsive değerler
     final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.08 : 0.12));
-    final verticalPadding = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
     final iconContainerSize = isMobile ? 70.0 : (isTablet ? 80.0 : 90.0);
     final photoContainerSize = screenWidth * (isMobile ? 0.55 : (isTablet ? 0.45 : 0.35));
     final titleFontSize = isMobile ? 22.0 : (isTablet ? 26.0 : 30.0);

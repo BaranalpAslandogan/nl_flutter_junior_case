@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jr_case_boilerplate/core/helpers/localization_helper.dart';
 import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
 import 'package:jr_case_boilerplate/features/auth/widgets/auth_rich_text.dart';
 import 'package:jr_case_boilerplate/l10n/app_localizations.dart';
@@ -40,7 +39,6 @@ class _RegisterViewState extends State<RegisterView> {
   // Responsive breakpoints
   bool _isMobile(double width) => width < 600;
   bool _isTablet(double width) => width >= 600 && width < 1024;
-  bool _isDesktop(double width) => width >= 1024;
 
   // Responsive sizing methods
   double _getResponsivePadding(double screenWidth) {
@@ -166,7 +164,6 @@ class _RegisterViewState extends State<RegisterView> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final screenWidth = constraints.maxWidth;
-            final screenHeight = constraints.maxHeight;
             final responsivePadding = _getResponsivePadding(screenWidth);
             final maxContentWidth = _getMaxContentWidth(screenWidth);
 

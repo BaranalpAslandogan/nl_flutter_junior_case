@@ -42,6 +42,8 @@ dependencies:
   flutter_spinkit: ^5.2.2
   image_picker: ^1.2.0
   dotted_border: ^3.1.0
+  path_provider: ^2.1.5
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
@@ -66,9 +68,29 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/Apple.png
+    - assets/Arrow.png
+    - assets/Facebook.png
+    - assets/Gem.png
+    - assets/Google.png
+    - assets/Heart-fill.png
+    - assets/Heart.png
+    - assets/Hide.png
+    - assets/Home.png
+    - assets/Home-fill.png
+    - assets/Icon.png
+    - assets/IconImage.png
+    - assets/Lock.png
+    - assets/Mail.png
+    - assets/Plus.png
+    - assets/Profile-fill.png
+    - assets/Profile.png
+    - assets/See.png
+    - assets/User.png
+    - assets/X.png
+
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

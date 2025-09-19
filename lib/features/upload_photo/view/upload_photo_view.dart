@@ -1,7 +1,12 @@
+// upload_photo_view.dart
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+
+// Eklenen import
+import '../../auth/services/auth_service.dart';
 
 class UploadPhotoView extends StatefulWidget {
   const UploadPhotoView({Key? key}) : super(key: key);
@@ -140,18 +145,15 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
     });
 
     try {
-      // Burada gerçek upload işlemi yapılacak
-      // Örnek: API'ye gönderme, Firebase Storage'a yükleme, vb.
+      // Gerçek API çağrısını ekle
+      final result = await AuthService.uploadPhoto(photoFile: _selectedImage!);
       
-      // Simüle edilmiş upload süresi
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Başarılı upload sonrası profil sayfasına geri dön
-      _showSnackBar('Fotoğraf başarıyla yüklendi!');
-      
-      // Geriye profil fotoğrafını gönder
-      Navigator.pop(context, _selectedImage);
-      
+      if (result['success']) {
+        _showSnackBar('Fotoğraf başarıyla yüklendi!');
+        Navigator.pop(context, _selectedImage); // Başarılı olursa resim dosyasını geri döndür
+      } else {
+        _showSnackBar(result['message'] ?? 'Yükleme sırasında hata oluştu', isError: true);
+      }
     } catch (e) {
       _showSnackBar('Yükleme sırasında hata oluştu', isError: true);
     } finally {
@@ -183,9 +185,9 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
             center: Alignment.topCenter,
             radius: 1.6,
             colors: [
-              Color(0xFFAF0810 ), // Koyu yeşil
-              Color(0xFF1F0103), // Daha koyu yeşil
-              Color(0xFF090909), // Çok koyu yeşil/siyah
+              Color(0xFFAF0810 ),
+              Color(0xFF1F0103),
+              Color(0xFF090909),
             ],
             stops: [0.0, 0.3, 1.0],
           ),
@@ -193,18 +195,13 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
               _buildHeader(),
-              
-              // Ana içerik
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-                      
-                      // Profil ikonu
                       Container(
                         width: 80,
                         height: 80,
@@ -218,10 +215,7 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                           color: Colors.white,
                         ),
                       ),
-                      
                       const SizedBox(height: 24),
-                      
-                      // Başlık
                       const Text(
                         'Fotoğraf Yükle',
                         style: TextStyle(
@@ -230,10 +224,7 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      
                       const SizedBox(height: 8),
-                      
-                      // Alt başlık
                       Text(
                         'Profil fotoğrafı için görsel\nyükleyebilirsin',
                         textAlign: TextAlign.center,
@@ -243,82 +234,50 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                           height: 1.4,
                         ),
                       ),
-                      
                       const SizedBox(height: 40),
-                      
-                      // Fotoğraf seçme alanı
                       GestureDetector(
                         onTap: _pickImage,
-                        child: _selectedImage != null ? Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: _selectedImage != null 
-                                ? Colors.transparent 
-                                : Colors.grey[900],
-                            borderRadius: BorderRadius.circular(20),
-                            border: _selectedImage == null ? Border.all(
-                              color: Colors.grey[700]!,
-                              width: 2,
-                              style: BorderStyle.solid,
-                            ) : null,
-                            image: _selectedImage != null
-                                ? DecorationImage(
+                        child: _selectedImage != null
+                            ? Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: DecorationImage(
                                     image: FileImage(_selectedImage!),
                                     fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: _selectedImage == null
-                              ? const Icon(
-                                  Icons.add,
-                                  size: 40,
-                                  color: Colors.white,
-                                )
-                              : null,
-                        ) :
-                       Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                            color:Colors.grey[900],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                         child: DottedBorder(
-                            options: RoundedRectDottedBorderOptions(
-                              color: Colors.grey[700]!,
-                              dashPattern: [10, 5],
-                              strokeWidth: 1,
-                              padding: EdgeInsets.all(16), radius: Radius.circular(20),
-                            ),
-                            child: Center(
-                              child: const Icon(
-                                    Icons.add,
-                                    size: 40,
-                                    color: Colors.white,
                                   ),
-                            )
-                          ),
-                       )
+                                ),
+                              )
+                            : Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[900],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: DottedBorder(
+                                  options: RoundedRectDottedBorderOptions(
+                                    color: Colors.grey[700]!,
+                                    dashPattern: [10, 5],
+                                    strokeWidth: 1,
+                                    padding: EdgeInsets.all(16),
+                                    radius: Radius.circular(20),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 40,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
-                      
                       if (_selectedImage != null) ...[
                         const SizedBox(height: 30),
-                        // Text(
-                        //   'Fotoğraf seçildi ✓',
-                        //   style: TextStyle(
-                        //     color: Colors.green[400],
-                        //     fontSize: 14,
-                        //     fontWeight: FontWeight.w500,
-                        //   ),
-                        // ),
-                        
-                        // const SizedBox(height: 10),
-
                         GestureDetector(
-                          onTap: () {
-                            _discardImage();
-                          },
+                          onTap: _discardImage,
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -337,25 +296,10 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                             ),
                           ),
                         ),
-
-                        // TextButton(
-                        //   onPressed: _pickImage,
-                        //   child: const Text(
-                        //     'Farklı fotoğraf seç',
-                        //     style: TextStyle(
-                        //       color: Colors.grey,
-                        //       fontSize: 14,
-                        //     ),
-                        //   ),
-                        // ),
                       ],
-                      
                       const Spacer(),
-                      
-                      // Alt butonlar
                       Column(
                         children: [
-                          // Devam Et butonu
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
@@ -363,10 +307,10 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                                   ? _uploadImage
                                   : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFFCC0000),
-                                foregroundColor: Color(0xFFFFFFFF),
-                                disabledBackgroundColor: Color(0xFFCC0000).withOpacity(0.5),
-                                disabledForegroundColor: Color(0xFFFFFFFF).withOpacity(0.5),
+                                backgroundColor: const Color(0xFFCC0000),
+                                foregroundColor: const Color(0xFFFFFFFF),
+                                disabledBackgroundColor: const Color(0xFFCC0000).withOpacity(0.5),
+                                disabledForegroundColor: const Color(0xFFFFFFFF).withOpacity(0.5),
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
@@ -391,10 +335,7 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                                     ),
                             ),
                           ),
-                          
                           const SizedBox(height: 16),
-                          
-                          // Atla butonu
                           SizedBox(
                             width: double.infinity,
                             child: TextButton(
@@ -411,7 +352,6 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                               ),
                             ),
                           ),
-                          
                           const SizedBox(height: 20),
                         ],
                       ),

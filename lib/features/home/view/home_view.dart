@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:jr_case_boilerplate/core/extensions/assets/app_icons_ext.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
+import 'package:jr_case_boilerplate/features/auth/services/movie_service.dart';
+import 'package:jr_case_boilerplate/features/home/widgets/network_image.dart';
 import 'package:jr_case_boilerplate/features/profile/view/profile_view.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/models/movie_item_model.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -15,45 +18,23 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   User? _currentUser;
   bool _isLoading = true;
+  bool _isLoadingMovies = false;
   int _currentNavIndex = 0;
+  int _currentPage = 1;
+  int _totalPages = 1;
   
   // PageView controller for horizontal swiping
   PageController _pageController = PageController();
   int _currentMovieIndex = 0;
   
   // Film verileri
-  final List<Map<String, String>> _movies = [
-    {
-      'title': 'Son Ana Kadar',
-      'description': 'Birbirine derinden bağlı iki çocukluk\narkadaşı olan Sydney ve Devam Oku',
-      'image': 'https://i.imgur.com/xMkDVab.jpeg',
-    },
-    {
-      'title': 'Aşk Hikayesi',
-      'description': 'İki kalbin birbirini bulması ve\naşkın gücünü keşfetmesi',
-      'image': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=1200&fit=crop',
-    },
-    {
-      'title': 'Macera Zamanı',
-      'description': 'Sınırları aşan bir macera ve\nkeşfedilmeyi bekleyen gizemler',
-      'image': 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1200&fit=crop',
-    },
-    {
-      'title': 'Gizli Dünya',
-      'description': 'Görünmeyen dünyanın sırları ve\nbilinmezlere doğru yolculuk',
-      'image': 'https://images.unsplash.com/photo-1489599558337-2c6b9f0e0d18?w=800&h=1200&fit=crop',
-    },
-    {
-      'title': 'Zaman Yolcusu',
-      'description': 'Geçmiş ve gelecek arasındaki\nmüthiş bir zaman yolculuğu',
-      'image': 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=1200&fit=crop',
-    },
-  ];
+  List<MovieItem> _movies = [];
+  List<MovieItem> _favoriteMovies = [];
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _initializeData();
   }
 
   @override
@@ -62,22 +43,203 @@ class _HomeViewState extends State<HomeView> {
     super.dispose();
   }
 
-  Future<void> _loadUserData() async {
+  // Tüm verileri yükle
+  Future<void> _initializeData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final user = await AuthService.getCurrentUser();
-      if (mounted) {
-        setState(() {
-          _currentUser = user;
-          _isLoading = false;
-        });
-      }
+      // Kullanıcı verilerini yükle
+      await _loadUserData();
+      
+      // Film verilerini yükle
+      await _loadMoviesData();
     } catch (e) {
+      _showSnackBar('Veriler yüklenirken hata oluştu: ${e.toString()}', isError: true);
+    } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
     }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final user = await AuthService.getCurrentUser();
+      if (mounted) {
+        setState(() {
+          _currentUser = user;
+        });
+      }
+    } catch (e) {
+      print('Kullanıcı verisi yüklenemedi: $e');
+    }
+  }
+
+  Future<void> _loadMoviesData() async {
+    setState(() {
+      _isLoadingMovies = true;
+    });
+
+    try {
+      // Paralel olarak her iki isteği de yap
+      final results = await Future.wait([
+        MovieService.getMovieList(page: _currentPage),
+      ]);
+
+      final moviesResult = results[0];
+
+      // Film listesi sonuçları
+      if (moviesResult['success']) {
+        final moviesList = moviesResult['movies'] as List;
+        _currentPage = moviesResult['currentPage'] ?? 1;
+        _totalPages = moviesResult['totalPages'] ?? 1;
+
+        // MovieItem listesine dönüştür
+        final movies = moviesList.map((movieJson) => MovieItem.fromJson(movieJson)).toList();
+
+        setState(() {
+          _movies = movies;
+        });
+      } else {
+        _showSnackBar(moviesResult['message'], isError: true);
+        
+        // Unauthorized durumu kontrolü
+        if (moviesResult['unauthorized'] == true) {
+          _handleUnauthorized();
+          return;
+        }
+      }
+
+      // Favori filmler sonuçları
+      // if (favoritesResult['success']) {
+      //   final favoritesList = favoritesResult['movies'] as List;
+      //   final favoriteMovies = favoritesList.map((movieJson) => MovieItem.fromJson(movieJson)).toList();
+
+      //   setState(() {
+      //     _favoriteMovies = favoriteMovies;
+      //   });
+      // } else {
+      //   print('Favori filmler yüklenemedi: ${favoritesResult['message']}');
+        
+      //   // Unauthorized durumu kontrolü
+      //   if (favoritesResult['unauthorized'] == true) {
+      //     _handleUnauthorized();
+      //     return;
+      //   }
+      // }
+
+      // // İki listeyi karşılaştır ve isFavorite durumlarını güncelle
+      // _updateFavoriteStatus();
+
+    } catch (e) {
+      _showSnackBar('Filmler yüklenirken hata oluştu: ${e.toString()}', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingMovies = false;
+        });
+      }
+    }
+  }
+
+  // Favori durumlarını güncelle
+  void _updateFavoriteStatus() {
+    // Favori film ID'lerini topla
+    final favoriteIds = _favoriteMovies.map((movie) => movie.id).toSet();
+
+    // Ana film listesindeki her film için favori durumunu kontrol et
+    setState(() {
+      _movies = _movies.map((movie) {
+        return movie.copyWith(
+          isFavorite: favoriteIds.contains(movie.id),
+        );
+      }).toList();
+    });
+  }
+
+  // Filmi favorilere ekle/çıkar
+  Future<void> _toggleFavorite(String movieId, int movieIndex) async {
+    try {
+      // Optimistic UI - önce UI'ı güncelle
+      final currentMovie = _movies[movieIndex];
+      final newFavoriteStatus = !(currentMovie.isFavorite ?? false);
+
+      setState(() {
+        _movies[movieIndex] = currentMovie.copyWith(isFavorite: newFavoriteStatus);
+      });
+
+      // API isteğini yap
+      final result = await MovieService.toggleFavorite(favoriteId: movieId);
+
+      if (result['success']) {
+        _showSnackBar(
+          newFavoriteStatus 
+            ? '${currentMovie.title} favorilere eklendi!'
+            : '${currentMovie.title} favorilerden çıkarıldı!',
+          isError: false,
+        );
+
+        // Favori listeyi yeniden yükle
+        await _loadFavoriteMovies();
+      } else {
+        // Hata durumunda eski duruma geri döndür
+        setState(() {
+          _movies[movieIndex] = currentMovie.copyWith(isFavorite: !newFavoriteStatus);
+        });
+
+        _showSnackBar(result['message'], isError: true);
+
+        // Unauthorized kontrolü
+        if (result['unauthorized'] == true) {
+          _handleUnauthorized();
+        }
+      }
+    } catch (e) {
+      // Hata durumunda eski duruma geri döndür
+      final currentMovie = _movies[movieIndex];
+      setState(() {
+        _movies[movieIndex] = currentMovie.copyWith(isFavorite: !(currentMovie.isFavorite ?? false));
+      });
+
+      _showSnackBar('Favori durumu değiştirilemedi: ${e.toString()}', isError: true);
+    }
+  }
+
+  // Sadece favori filmleri yeniden yükle
+  Future<void> _loadFavoriteMovies() async {
+    try {
+      final result = await MovieService.getFavoriteMovies();
+      
+      if (result['success']) {
+        final favoritesList = result['movies'] as List;
+        final favoriteMovies = favoritesList.map((movieJson) => MovieItem.fromJson(movieJson)).toList();
+
+        setState(() {
+          _favoriteMovies = favoriteMovies;
+        });
+
+        _updateFavoriteStatus();
+      }
+    } catch (e) {
+      print('Favori filmler yenilenemedi: $e');
+    }
+  }
+
+  // Sayfa yenile
+  Future<void> _refreshMovies() async {
+    await _loadMoviesData();
+  }
+
+  // Yetkisiz erişim durumunu handle et
+  void _handleUnauthorized() {
+    _showSnackBar('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', isError: true);
+    
+    // Login sayfasına yönlendir
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
@@ -96,7 +258,50 @@ class _HomeViewState extends State<HomeView> {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.red),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.red),
+              SizedBox(height: 16),
+              Text(
+                'Filmler yükleniyor...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Film listesi boşsa
+    if (_movies.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.movie_outlined,
+                color: Colors.white,
+                size: 64,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Henüz film bulunmuyor',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _refreshMovies,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Yenile'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -116,9 +321,28 @@ class _HomeViewState extends State<HomeView> {
             itemCount: _movies.length,
             itemBuilder: (context, index) {
               final movie = _movies[index];
-              return _buildMovieScreen(movie);
+              return _buildMovieScreen(movie, index);
             },
           ),
+          
+          // Loading overlay
+          if (_isLoadingMovies)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                      'Güncelleniyor...',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           
           // Transparan Bottom Navbar - En üstte
           Positioned(
@@ -148,7 +372,7 @@ class _HomeViewState extends State<HomeView> {
           
                     switch (index) {
                       case 0:
-                        _showSnackBar('Anasayfadasınız');
+                        _showSnackBar('Anasayfa');
                         break;
                       case 1:
                         Navigator.push(
@@ -157,7 +381,7 @@ class _HomeViewState extends State<HomeView> {
                         );
                         break;
                       default:
-                        _showSnackBar('Anasayfadasınız');
+                        _showSnackBar('Anasayfa');
                         break;
                     } 
                   },
@@ -165,34 +389,12 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ),
-          
-          // Sayfa göstergesi (dots)
-          // Positioned(
-          //   right: 20,
-          //   top: MediaQuery.of(context).size.height * 0.5,
-          //   child: Column(
-          //     children: List.generate(
-          //       _movies.length,
-          //       (index) => Container(
-          //         width: 8,
-          //         height: 8,
-          //         margin: const EdgeInsets.symmetric(vertical: 4),
-          //         decoration: BoxDecoration(
-          //           shape: BoxShape.circle,
-          //           color: _currentMovieIndex == index
-          //               ? Colors.white
-          //               : Colors.white.withOpacity(0.4),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
   }
 
-  Widget _buildMovieScreen(Map<String, String> movie) {
+  Widget _buildMovieScreen(MovieItem movie, int movieIndex) {
      return Container(
       width: double.infinity,
       height: double.infinity,
@@ -200,13 +402,11 @@ class _HomeViewState extends State<HomeView> {
         fit: StackFit.expand,
         children: [
           // Background image - tam ekran
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(movie['image']!),
-                fit: BoxFit.cover,
-              ),
-            ),
+          CustomNetworkImage(
+            imageUrl: movie.posterUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
           
           // Gradient overlay - daha yumuşak geçiş
@@ -232,19 +432,13 @@ class _HomeViewState extends State<HomeView> {
             left: 20,
             child: Container(
               alignment: Alignment.topCenter,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(40),
               ),
-              child: const Text(
-                'N',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Image(image: Image.asset( 'assets/IconImage.png').image,
+              width: 40,
+              height: 40,
+            ),
             ),
           ),
           
@@ -258,7 +452,7 @@ class _HomeViewState extends State<HomeView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  movie['title']!,
+                  movie.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -273,9 +467,11 @@ class _HomeViewState extends State<HomeView> {
                   ),
                 ),
                 
+                const SizedBox(height: 8),
+                
                 // Film açıklaması
                 Text(
-                  movie['description']!,
+                  movie.description,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -288,6 +484,8 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     ],
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -298,19 +496,40 @@ class _HomeViewState extends State<HomeView> {
             bottom: MediaQuery.of(context).size.height * 0.230,
             right: MediaQuery.of(context).size.width * 0.028,
             child: FavoriteButton(
-                    isLiked: true,
-                    onTap: () {
-                      setState(() {
-                        // _movieLikes[movieIndex] = !(_movieLikes[movieIndex] ?? false);
-                      });
-                      
-                      // final isLiked = _movieLikes[movieIndex] ?? false;
-                      // _showSnackBar(
-                      //   isLiked ? '${movie['title']} beyaz kalple beğenildi!' : '${movie['title']} beğenisi kaldırıldı!',
-                      //   isError: false,
-                      // );
-                    },
-                  ),
+              isLiked: movie.isFavorite ?? false,
+              onTap: () => _toggleFavorite(movie.id, movieIndex),
+            ),
+          ),
+          
+          // Pull to refresh indicator (üstte)
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _refreshMovies,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.refresh,
+                      color: Colors.white.withOpacity(0.7),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Yenilemek için tıklayın',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

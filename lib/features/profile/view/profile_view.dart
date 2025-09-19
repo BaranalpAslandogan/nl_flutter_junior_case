@@ -1,11 +1,17 @@
+// profile_view.dart
+
 import 'package:flutter/material.dart';
+import 'package:jr_case_boilerplate/core/models/movie_item_model.dart';
 import 'package:jr_case_boilerplate/core/widgets/bottom_sheet/offer_bottom_sheet.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
+import 'package:jr_case_boilerplate/features/auth/services/movie_service.dart';
 import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
 import 'package:jr_case_boilerplate/features/upload_photo/view/upload_photo_view.dart';
 import '../../../core/models/user_model.dart';
 import 'dart:io';
+
+// Eklenen import
 
 class ProfileView extends StatefulWidget {
   const ProfileView({Key? key}) : super(key: key);
@@ -17,58 +23,59 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   User? _currentUser;
   bool _isLoading = true;
-  int _currentNavIndex = 1; // Profil sekmesi aktif
-  File? _profileImage; // Profil fotoğrafı için
-
-  // Örnek beğenilen filmler
-  final List<Map<String, String>> _likedMovies = [
-    {
-      'title': 'Love Again',
-      'subtitle': 'Aşk Yeniden',
-      'company': 'Sony',
-      'image': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
-    },
-    {
-      'title': 'After Lives',
-      'subtitle': 'Başka Bir Hayatta',
-      'company': 'A24',
-      'image': 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=300&h=400&fit=crop',
-    },
-    {
-      'title': 'Anyone But You',
-      'subtitle': 'Senden Başka',
-      'company': 'Columbia',
-      'image': 'https://images.unsplash.com/photo-1489599558337-2c6b9f0e0d18?w=300&h=400&fit=crop',
-    },
-    {
-      'title': 'Culpa Mía',
-      'subtitle': 'Culpa mía',
-      'company': 'Netflix',
-      'image': 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=300&h=400&fit=crop',
-    },
-  ];
+  int _currentNavIndex = 1;
+  File? _profileImage;
+  
+  // Yeni eklenen değişkenler
+  List<MovieItem> _favoriteMovies = [];
+  bool _isMoviesLoading = true;
+  String? _moviesError;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserDataAndMovies();
   }
 
-  Future<void> _loadUserData() async {
+  // Hem kullanıcı bilgilerini hem de filmleri yüklemek için yeni bir metot
+  Future<void> _loadUserDataAndMovies() async {
+    setState(() {
+      _isLoading = true;
+      _isMoviesLoading = true;
+    });
     try {
-      final user = await AuthService.getCurrentUser();
-      if (mounted) {
-        setState(() {
-          _currentUser = user;
-          _isLoading = false;
-        });
-      }
+      final user = await AuthService.getProfile();
+      User _user = user['user'];
+      setState(() {
+        _currentUser = _user;
+        _isLoading = false;
+      });
+      // Favori filmleri yükle
+      await _loadFavoriteMovies();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _isMoviesLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadFavoriteMovies() async {
+    final result = await MovieService.getFavoriteMovies();
+    if (mounted) {
+      setState(() {
+        if (result['success']) {
+          final List moviesData = result['movies'];
+          _favoriteMovies = moviesData.map((json) => MovieItem.fromJson(json)).toList();
+          _moviesError = null;
+        } else {
+          _moviesError = result['message'];
+          _favoriteMovies = [];
+        }
+        _isMoviesLoading = false;
+      });
     }
   }
 
@@ -88,7 +95,7 @@ class _ProfileViewState extends State<ProfileView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const LimitedOfferPopup(), // Kendi widget'ınızı kullanın
+      builder: (context) => const LimitedOfferPopup(),
     );
   }
 
@@ -126,9 +133,7 @@ class _ProfileViewState extends State<ProfileView> {
               onPressed: () async {
                 Navigator.of(context).pop();
                 await AuthService.logout();
-
                 _showSnackBar('Başarıyla çıkış yapıldı');
-
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginView()),
@@ -152,7 +157,7 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       );
     }
-
+    
     return Scaffold(
       backgroundColor: Colors.black,
       body: Container(
@@ -163,9 +168,9 @@ class _ProfileViewState extends State<ProfileView> {
             center: Alignment.topCenter,
             radius: 1.6,
             colors: [
-              Color(0xFFAF0810 ), // Koyu yeşil
-              Color(0xFF1F0103), // Daha koyu yeşil
-              Color(0xFF090909), // Çok koyu yeşil/siyah
+              Color(0xFFAF0810 ),
+              Color(0xFF1F0103),
+              Color(0xFF090909),
             ],
             stops: [0.0, 0.3, 1.0],
           ),
@@ -173,40 +178,27 @@ class _ProfileViewState extends State<ProfileView> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
               _buildHeader(),
-        
-              // Ana içerik
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      // Profil bilgileri
                       _buildProfileInfo(),
-        
                       Divider(thickness: 1, color: Colors.white.withOpacity(0.15),),
                       const SizedBox(height: 30),
-        
-                      // Beğendiklerim bölümü
                       _buildLikedSection(),
-        
-                      // Alt boşluk
                       const SizedBox(height: 100),
                     ],
                   ),
                 ),
               ),
-        
-              // Bottom Navbar
               CustomNavbar(
                 currentIndex: _currentNavIndex,
                 onTap: (index) {
                   setState(() {
                     _currentNavIndex = index;
                   });
-        
                   if (index == 0) {
-                    // Anasayfaya dön
                     Navigator.pop(context);
                   }
                 },
@@ -240,16 +232,15 @@ class _ProfileViewState extends State<ProfileView> {
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.favorite,
-                    color: Colors.white,
-                    size: 16,
+                  Image(image: Image.asset( 'assets/Gem.png').image,
+                    width: 16,
+                    height: 16,
                   ),
-                  SizedBox(width: 6),
-                  Text(
+                  const SizedBox(width: 6),
+                  const Text(
                     'Sınırlı Teklif',
                     style: TextStyle(
                       color: Colors.white,
@@ -274,145 +265,88 @@ class _ProfileViewState extends State<ProfileView> {
           CircleAvatar(
             radius: 32,
             backgroundColor: Colors.grey[800],
-            backgroundImage: _profileImage != null
-                ? FileImage(_profileImage!)
-                : const NetworkImage(
-                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
+            backgroundImage: 
+                NetworkImage( _currentUser?.photoUrl ??
+                   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
                   ) as ImageProvider,
           ),
           const SizedBox(width: 10),
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Kullanıcı adı
               Text(
-                _currentUser?.name ?? 'Ayca Aydoğan',
+                _currentUser?.name ?? 'Kullanıcı',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-          
               const SizedBox(height: 4),
-          
-              // Kullanıcı ID
               Text(
-                'ID: ${_currentUser?.email.hashCode.toString().substring(0, 6) ?? "245677"}',
+                'ID: ${_currentUser?.id?.substring(0, 6) ?? "ID Yok"}',
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontSize: 14,
                 ),
               ),
-          
-              // const SizedBox(height: 20),
-          
-              // Butonlar
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //   children: [
-              //     Fotoğraf Ekle butonu
-              //     ElevatedButton.icon(
-              //       onPressed: () async {
-              //         final result = await Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //             builder: (context) => const UploadPhotoView(),
-              //           ),
-              //         );
-          
-              //         if (result != null && result is File) {
-              //           setState(() {
-              //             _profileImage = result;
-              //           });
-              //           _showSnackBar('Profil fotoğrafı güncellendi!');
-              //         }
-              //       },
-              //       icon: const Icon(Icons.camera_alt, color: Colors.white),
-              //       label: const Text(
-              //         'Fotoğraf Ekle',
-              //         style: TextStyle(
-              //           color: Colors.white,
-              //           fontWeight: FontWeight.w600,
-              //         ),
-              //       ),
-              //       style: ElevatedButton.styleFrom(
-              //         backgroundColor: Colors.grey[800],
-              //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(25),
-              //         ),
-              //       ),
-              //     ),
-          
-              //     Çıkış Yap butonu
-                  // ElevatedButton.icon(
-                  //   onPressed: _showLogoutDialog,
-                  //   icon: const Icon(Icons.logout, color: Colors.white),
-                  //   label: const Text(
-                  //     'Çıkış Yap',
-                  //     style: TextStyle(
-                  //       color: Colors.white,
-                  //       fontWeight: FontWeight.w600,
-                  //     ),
-                  //   ),
-              //       style: ElevatedButton.styleFrom(
-              //         backgroundColor: Colors.red[700],
-              //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(25),
-              //         ),
-              //       ),
-              //     ),
-              //   ],
-              // ),
             ],
           ),
-          
           const SizedBox(width: 10),
-
           Expanded(
             child: Container(
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const UploadPhotoView(),
-                            ),
-                          );
-              
-                          if (result != null && result is File) {
-                            setState(() {
-                              _profileImage = result;
-                            });
-                          }
-                        },
-                        label: const Text(
-                          'Fotoğraf Ekle',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.09),
-                          fixedSize: Size(MediaQuery.of(context).size.width * 0.27, MediaQuery.of(context).size.width * 0.095),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UploadPhotoView(),
+                    ),
+                  );
+                  if (result != null && result is File) {
+                    setState(() {
+                      _profileImage = result;
+                    });
+                    // Fotoğraf yüklendikten sonra profil verisini de yenile
+                    _refreshProfileData();
+                  }
+                },
+                label: const Text(
+                  'Fotoğraf Ekle',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.09),
+                  fixedSize: Size(MediaQuery.of(context).size.width * 0.27, MediaQuery.of(context).size.width * 0.095),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
             ),
           ),
+
+          Expanded(child: GestureDetector(
+            onTap: _showLogoutDialog,
+            child: Container(
+              alignment: Alignment.centerRight,
+              child: const Icon(
+                Icons.logout,
+                color: Colors.white70,
+                size: 28,
+              ),
+            ),
+          ),)
         ],
       ),
     );
   }
-
+  
   Widget _buildLikedSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,87 +362,107 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
         ),
-
         const SizedBox(height: 16),
-
-        // Film kartları - 2x2 grid
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child:GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.6, // Yazılar için daha fazla alan
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: _likedMovies.length,
-            itemBuilder: (context, index) {
-              final movie = _likedMovies[index];
-              return _buildMovieCard(movie);
-            },
-          ),
-        ),
+        _isMoviesLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.red),
+              )
+            : _favoriteMovies.isEmpty
+                ? Center(
+                    child: Text(
+                      _moviesError ?? 'Henüz favori filminiz yok.',
+                      style: TextStyle(color: Colors.grey[400]),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.6,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: _favoriteMovies.length,
+                      itemBuilder: (context, index) {
+                        final movie = _favoriteMovies[index];
+                        return _buildMovieCard(movie);
+                      },
+                    ),
+                  ),
       ],
     );
   }
 
-  Widget _buildMovieCard(Map<String, String> movie) {
-  return GestureDetector(
-    onTap: () {
-      _showSnackBar('${movie['title']} detayı yakında eklenecek');
-    },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Film resmi
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: NetworkImage(movie['image']!),
-                fit: BoxFit.cover,
+  Widget _buildMovieCard(MovieItem movie) {
+    return GestureDetector(
+      onTap: () {
+        _showSnackBar('${movie.title} detayı yakında eklenecek');
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: NetworkImage(movie.posterUrl!),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-        ),
-        
-        const SizedBox(height: 8),
-        
-        // Film bilgileri (resmin altında)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                movie['title']!,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  movie.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                movie['subtitle']!,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 14,
+                const SizedBox(height: 2),
+                Text(
+                  movie.description,
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
+
+  // Profil verisini backend'den yenilemek için
+  Future<void> _refreshProfileData() async {
+    final result = await AuthService.refreshProfile();
+    if (mounted) {
+      if (result['success']) {
+        setState(() {
+          _currentUser = result['user'];
+        });
+        _showSnackBar(result['message']);
+      } else {
+        _showSnackBar(result['message'], isError: true);
+      }
+    }
+  }
 }

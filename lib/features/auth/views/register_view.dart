@@ -122,18 +122,9 @@ class _RegisterViewState extends State<RegisterView> {
                 Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.person_add_outlined,
-                          color: Colors.white,
-                          size: 30,
-                        ),
+                      Image(image: Image.asset( 'assets/Icon.png').image,
+                        width: 120,
+                        height: 120,
                       ),
                       const SizedBox(height: 24),
                       const Text(

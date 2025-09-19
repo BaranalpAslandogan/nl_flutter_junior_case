@@ -1,135 +1,86 @@
+// lib/main.dart - Anlık dil değişimi versiyonu
+
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:jr_case_boilerplate/core/helpers/localization_helper.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
 import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
 import 'package:jr_case_boilerplate/features/home/view/home_view.dart';
+import 'package:jr_case_boilerplate/features/splash/view/splash_view.dart';
+import 'package:jr_case_boilerplate/l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = LocalizationHelper.defaultLocale;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocale();
+    
+    // LocalizationHelper'a callback ver
+    LocalizationHelper.setMyAppCallback((locale) {
+      if (mounted) {
+        setState(() {
+          _locale = locale;
+        });
+      }
+    });
+  }
+
+  Future<void> _loadSavedLocale() async {
+    final savedLocale = await LocalizationHelper.getSavedLocale();
+    if (mounted) {
+      setState(() {
+        _locale = savedLocale;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ShartFlix',
       debugShowCheckedModeBanner: false,
+      
+      // Localization ayarları
+      locale: _locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: LocalizationHelper.supportedLocales,
+      
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFE50914),
           primary: const Color(0xFFE50914),
           secondary: const Color(0xFF5949E6),
           error: const Color(0xFFF47171),
-
         ),
-        // primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'System',
       ),
-      home: const SplashScreen(),
-    );
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    // 2 saniye splash screen göster
-    await Future.delayed(const Duration(seconds: 2));
-    
-    try {
-      final isLoggedIn = await AuthService.isLoggedIn();
       
-      if (mounted) {
-        if (isLoggedIn) {
-          // Kullanıcı giriş yapmış, ana sayfaya yönlendir
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeView()),
-          );
-        } else {
-          // Kullanıcı giriş yapmamış, login sayfasına yönlendir
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginView()),
-          );
-        }
-      }
-    } catch (e) {
-      // Hata durumunda login sayfasına yönlendir
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        alignment: Alignment.topCenter,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            tileMode: TileMode.clamp,
-            center: Alignment.topCenter,
-            radius: 1.6,
-            colors: [
-              Color(0xFFAF0810 ), // Koyu yeşil
-              Color(0xFF1F0103), // Daha koyu yeşil
-              Color(0xFF090909), // Çok koyu yeşil/siyah
-            ],
-            stops: [0.0, 0.3, 1.0],
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo
-            Image(image: Image.asset( 'assets/Icon.png').image,
-              width: 120,
-              height: 120,
-            ),
-            const SizedBox(height: 32),
-            
-            // Uygulama adı
-            const Text(
-              'Shartflix',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Loading indicator
-            // const SizedBox(
-            //   width: 30,
-            //   height: 30,
-            //   child: CircularProgressIndicator(
-            //     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            //     strokeWidth: 3,
-            //   ),
-            // ),
-          ],
-        ),
-      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginView(),
+        '/home': (context) => const HomeView(),
+      },
     );
   }
 }

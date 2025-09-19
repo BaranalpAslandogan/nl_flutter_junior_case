@@ -34,19 +34,19 @@ class AuthService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': data['message'] ?? 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.',
+          'message': data['message'] ?? 'Registration successful! You can now login.',
           'user': data['user'] != null ? User.fromJson(data['user']) : null,
         };
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Kayıt sırasında bir hata oluştu.',
+          'message': data['message'] ?? data['error'] ?? 'An error occurred during registration.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -86,20 +86,20 @@ class AuthService {
 
         return {
           'success': true,
-          'message': data['message'] ?? 'Giriş başarılı!',
+          'message': data['message'] ?? 'Login successful!',
           'user': user,
           'token': token,
         };
       } else {
         return {
           'success': false,
-          'message': data['response']?['message'] ?? data['message'] ?? data['error'] ?? 'Giriş sırasında bir hata oluştu.',
+          'message': data['response']?['message'] ?? data['message'] ?? data['error'] ?? 'An error occurred during login.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -111,7 +111,7 @@ class AuthService {
       if (token == null) {
         return {
           'success': false,
-          'message': 'Token bulunamadı. Lütfen tekrar giriş yapın.',
+          'message': 'Token not found. Please login again.',
         };
       }
 
@@ -141,19 +141,19 @@ class AuthService {
 
         return {
           'success': true,
-          'message': 'Profil bilgileri alındı.',
+          'message': 'Profile information retrieved.',
           'user': user,
         };
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Profil bilgileri alınamadı.',
+          'message': data['message'] ?? data['error'] ?? 'Unable to retrieve profile information.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -167,7 +167,7 @@ class AuthService {
       if (token == null) {
         return {
           'success': false,
-          'message': 'Token bulunamadı. Lütfen tekrar giriş yapın.',
+          'message': 'Token not found. Please login again.',
         };
       }
 
@@ -197,19 +197,19 @@ class AuthService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': data['message'] ?? 'Fotoğraf başarıyla yüklendi!',
+          'message': data['message'] ?? 'Photo uploaded successfully!',
           'photoUrl': data['photoUrl'] ?? data['data']?['photoUrl'],
         };
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Fotoğraf yüklenemedi.',
+          'message': data['message'] ?? data['error'] ?? 'Photo could not be uploaded.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -222,7 +222,7 @@ class AuthService {
         return User.fromJson(jsonDecode(userJson));
       }
     } catch (e) {
-      print('Kullanıcı bilgisi alınamadı: $e');
+      print('User information could not be retrieved: $e');
     }
     return null;
   }
@@ -232,7 +232,7 @@ class AuthService {
     try {
       return await _storage.read(key: 'token');
     } catch (e) {
-      print('Token alınamadı: $e');
+      print('Token could not be retrieved: $e');
     }
     return null;
   }
@@ -266,7 +266,7 @@ class AuthService {
       if (profileResult['success']) {
         return {
           'success': true,
-          'message': 'Profil bilgileri güncellendi.',
+          'message': 'Profile information updated.',
           'user': profileResult['user'],
         };
       } else {
@@ -275,7 +275,7 @@ class AuthService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Profil yenilenemedi: ${e.toString()}',
+        'message': 'Profile could not be refreshed: ${e.toString()}',
       };
     }
   }

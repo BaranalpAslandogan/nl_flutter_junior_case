@@ -42,7 +42,7 @@ class MovieService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': 'Film listesi başarıyla alındı.',
+          'message': 'Movie list retrieved successfully.',
           'data': data['data'],
           'movies': data['data']['movies'] ?? [],
           'totalPages': data['data']['pagination']['maxPage'] ?? 0,
@@ -51,19 +51,19 @@ class MovieService {
       } else if (response.statusCode == 401) {
         return {
           'success': false,
-          'message': 'Yetkisiz erişim. Lütfen tekrar giriş yapın.',
+          'message': 'Unauthorized access. Please login again.',
           'unauthorized': true,
         };
       } else {
         return {
           'success': false,
-          'message': data['response']['message'] ?? 'Film listesi alınamadı.',
+          'message': data['response']['message'] ?? 'Movie list could not be retrieved.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -75,7 +75,7 @@ class MovieService {
       if (token == null) {
         return {
           'success': false,
-          'message': 'Token bulunamadı. Lütfen tekrar giriş yapın.',
+          'message': 'Token not found. Please login again.',
           'unauthorized': true,
         };
       }
@@ -94,26 +94,26 @@ class MovieService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': 'Favori filmler başarıyla alındı.',
+          'message': 'Favorite movies retrieved successfully.',
           'data': data['data'],
           'movies': data['data'] ?? [],
         };
       } else if (response.statusCode == 401) {
         return {
           'success': false,
-          'message': 'Yetkisiz erişim. Lütfen tekrar giriş yapın.',
+          'message': 'Unauthorized access. Please login again.',
           'unauthorized': true,
         };
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Favori filmler alınamadı.',
+          'message': data['message'] ?? data['error'] ?? 'Favorite movies could not be retrieved.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -127,7 +127,7 @@ class MovieService {
       if (token == null) {
         return {
           'success': false,
-          'message': 'Token bulunamadı. Lütfen tekrar giriş yapın.',
+          'message': 'Token not found. Please login again.',
           'unauthorized': true,
         };
       }
@@ -146,25 +146,25 @@ class MovieService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': data['message'] ?? 'Favori durumu başarıyla değiştirildi.',
+          'message': data['message'] ?? 'Favorite status changed successfully.',
           'data': data,
         };
       } else if (response.statusCode == 401) {
         return {
           'success': false,
-          'message': 'Yetkisiz erişim. Lütfen tekrar giriş yapın.',
+          'message': 'Unauthorized access. Please login again.',
           'unauthorized': true,
         };
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Favori durumu değiştirilemedi.',
+          'message': data['message'] ?? data['error'] ?? 'Favorite status could not be changed.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Bağlantı hatası: ${e.toString()}',
+        'message': 'Connection error: ${e.toString()}',
       };
     }
   }
@@ -238,7 +238,7 @@ class MovieService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Film listesi alınamadı: ${e.toString()}',
+        'message': 'Movie list could not be retrieved: ${e.toString()}',
       };
     }
   }

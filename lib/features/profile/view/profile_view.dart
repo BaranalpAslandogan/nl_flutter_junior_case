@@ -1,17 +1,19 @@
 // profile_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:jr_case_boilerplate/core/helpers/localization_helper.dart';
 import 'package:jr_case_boilerplate/core/models/movie_item_model.dart';
 import 'package:jr_case_boilerplate/core/widgets/bottom_sheet/offer_bottom_sheet.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
 import 'package:jr_case_boilerplate/features/auth/services/movie_service.dart';
 import 'package:jr_case_boilerplate/features/auth/views/login_view.dart';
+import 'package:jr_case_boilerplate/features/profile/widgets/profile_movie_card.dart';
 import 'package:jr_case_boilerplate/features/upload_photo/view/upload_photo_view.dart';
+import 'package:jr_case_boilerplate/l10n/app_localizations.dart';
 import '../../../core/models/user_model.dart';
 import 'dart:io';
-
-// Eklenen import
 
 class ProfileView extends StatefulWidget {
   const ProfileView({Key? key}) : super(key: key);
@@ -26,7 +28,6 @@ class _ProfileViewState extends State<ProfileView> {
   int _currentNavIndex = 1;
   File? _profileImage;
   
-  // Yeni eklenen değişkenler
   List<MovieItem> _favoriteMovies = [];
   bool _isMoviesLoading = true;
   String? _moviesError;
@@ -37,7 +38,6 @@ class _ProfileViewState extends State<ProfileView> {
     _loadUserDataAndMovies();
   }
 
-  // Hem kullanıcı bilgilerini hem de filmleri yüklemek için yeni bir metot
   Future<void> _loadUserDataAndMovies() async {
     setState(() {
       _isLoading = true;
@@ -50,7 +50,6 @@ class _ProfileViewState extends State<ProfileView> {
         _currentUser = _user;
         _isLoading = false;
       });
-      // Favori filmleri yükle
       await _loadFavoriteMovies();
     } catch (e) {
       if (mounted) {
@@ -89,7 +88,6 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // Sınırlı Teklif Popup'ını göstermek için fonksiyon
   void _showLimitedOfferPopup() {
     showModalBottomSheet(
       context: context,
@@ -99,8 +97,11 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // Çıkış dialog'unu göstermek için fonksiyon
   void _showLogoutDialog() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -109,31 +110,42 @@ class _ProfileViewState extends State<ProfileView> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Çıkış Yap',
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context)!.logout,
+            style: GoogleFonts.instrumentSans(
+              color: Colors.white,
+              fontSize: isMobile ? 18 : (isTablet ? 20 : 22),
+            ),
           ),
-          content: const Text(
-            'Uygulamadan çıkış yapmak istediğinizden emin misiniz?',
-            style: TextStyle(color: Colors.white70),
+          content: Text(
+            AppLocalizations.of(context)!.logoutConfirmation,
+            style: GoogleFonts.instrumentSans(
+              color: Colors.white70,
+              fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
+            ),
           ),
           actions: [
             TextButton(
-              child: const Text(
-                'İptal',
-                style: TextStyle(color: Colors.grey),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: GoogleFonts.instrumentSans(
+                  color: Colors.grey,
+                  fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
+                ),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text(
-                'Çıkış Yap',
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                AppLocalizations.of(context)!.logout,
+                style: GoogleFonts.instrumentSans(
+                  color: Colors.red,
+                  fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
+                ),
               ),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await AuthService.logout();
-                _showSnackBar('Başarıyla çıkış yapıldı');
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginView()),
@@ -149,14 +161,13 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.red),
-        ),
-      );
-    }
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Responsive breakpoints
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final isDesktop = screenWidth >= 1024;
     
     return Scaffold(
       backgroundColor: Colors.black,
@@ -166,27 +177,33 @@ class _ProfileViewState extends State<ProfileView> {
           gradient: RadialGradient(
             tileMode: TileMode.clamp,
             center: Alignment.topCenter,
-            radius: 1.6,
+            radius: 2,
             colors: [
-              Color(0xFFAF0810 ),
-              Color(0xFF1F0103),
+              Color.fromARGB(255, 216, 5, 16),
+              Color.fromARGB(255, 158, 12, 22),
+              Color.fromARGB(255, 53, 5, 5),
               Color(0xFF090909),
             ],
-            stops: [0.0, 0.3, 1.0],
+            stops: [0.0, 0.1, 0.2, 0.9],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(screenWidth, isMobile, isTablet, isDesktop),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _buildProfileInfo(),
-                      Divider(thickness: 1, color: Colors.white.withOpacity(0.15),),
-                      const SizedBox(height: 30),
-                      _buildLikedSection(),
+                      _buildProfileInfo(screenWidth, screenHeight, isMobile, isTablet, isDesktop),
+                      Divider(
+                        thickness: 1,
+                        color: Colors.white.withOpacity(0.15),
+                        indent: screenWidth * (isMobile ? 0.05 : 0.08),
+                        endIndent: screenWidth * (isMobile ? 0.05 : 0.08),
+                      ),
+                      SizedBox(height: isMobile ? 20 : (isTablet ? 25 : 30)),
+                      _buildLikedSection(screenWidth, isMobile, isTablet, isDesktop),
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -210,248 +227,245 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(double screenWidth, bool isMobile, bool isTablet, bool isDesktop) {
+    final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.06 : 0.08));
+    final verticalPadding = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
+    final titleFontSize = isMobile ? 22.0 : (isTablet ? 26.0 : 30.0);
+    final buttonFontSize = isMobile ? 11.0 : (isTablet ? 12.0 : 14.0);
+    final iconSize = isMobile ? 14.0 : (isTablet ? 16.0 : 18.0);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Profil',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          GestureDetector(
-            onTap: _showLimitedOfferPopup,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image(image: Image.asset( 'assets/Gem.png').image,
-                    width: 16,
-                    height: 16,
-                  ),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'Sınırlı Teklif',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileInfo() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: Colors.grey[800],
-            backgroundImage: 
-                NetworkImage( _currentUser?.photoUrl ??
-                   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
-                  ) as ImageProvider,
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
               Text(
-                _currentUser?.name ?? 'Kullanıcı',
-                style: const TextStyle(
+                AppLocalizations.of(context)!.profile,
+                style: GoogleFonts.instrumentSans(
                   color: Colors.white,
-                  fontSize: 24,
+                  fontSize: titleFontSize,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'ID: ${_currentUser?.id?.substring(0, 6) ?? "ID Yok"}',
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 14,
+              SizedBox(width: isMobile ? 8 : (isTablet ? 10 : 12)),
+              LocalizationHelper.buildLanguageButton(
+                context,
+                null,
+                null,
+              ),
+            ],
+          ),
+          
+          Row(
+            children: [
+              // Dil seçimi butonu
+              
+              
+              // Sınırlı teklif butonu
+              GestureDetector(
+                onTap: _showLimitedOfferPopup,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 12 : (isTablet ? 14 : 16),
+                    vertical: isMobile ? 6 : (isTablet ? 7 : 8),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 216, 5, 16),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/Gem.png',
+                        width: iconSize,
+                        height: iconSize,
+                      ),
+                      SizedBox(width: isMobile ? 4 : 6),
+                      Text(
+                        AppLocalizations.of(context)!.limitedOffer,
+                        style: GoogleFonts.instrumentSans(
+                          color: Colors.white,
+                          fontSize: buttonFontSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Container(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UploadPhotoView(),
-                    ),
-                  );
-                  if (result != null && result is File) {
-                    setState(() {
-                      _profileImage = result;
-                    });
-                    // Fotoğraf yüklendikten sonra profil verisini de yenile
-                    _refreshProfileData();
-                  }
-                },
-                label: const Text(
-                  'Fotoğraf Ekle',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.09),
-                  fixedSize: Size(MediaQuery.of(context).size.width * 0.27, MediaQuery.of(context).size.width * 0.095),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Expanded(child: GestureDetector(
-            onTap: _showLogoutDialog,
-            child: Container(
-              alignment: Alignment.centerRight,
-              child: const Icon(
-                Icons.logout,
-                color: Colors.white70,
-                size: 28,
-              ),
-            ),
-          ),)
         ],
       ),
     );
   }
-  
-  Widget _buildLikedSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Beğendiklerim',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _isMoviesLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.red),
-              )
-            : _favoriteMovies.isEmpty
-                ? Center(
-                    child: Text(
-                      _moviesError ?? 'Henüz favori filminiz yok.',
-                      style: TextStyle(color: Colors.grey[400]),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.6,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: _favoriteMovies.length,
-                      itemBuilder: (context, index) {
-                        final movie = _favoriteMovies[index];
-                        return _buildMovieCard(movie);
-                      },
-                    ),
-                  ),
-      ],
-    );
-  }
 
-  Widget _buildMovieCard(MovieItem movie) {
-    return GestureDetector(
-      onTap: () {
-        _showSnackBar('${movie.title} detayı yakında eklenecek');
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildProfileInfo(double screenWidth, double screenHeight, bool isMobile, bool isTablet, bool isDesktop) {
+    final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.06 : 0.08));
+    final avatarRadius = isMobile ? 28.0 : (isTablet ? 36.0 : 44.0);
+    final nameFontSize = isMobile ? 20.0 : (isTablet ? 24.0 : 28.0);
+    final idFontSize = isMobile ? 12.0 : (isTablet ? 14.0 : 16.0);
+    final buttonWidth = screenWidth * (isMobile ? 0.25 : (isTablet ? 0.22 : 0.20));
+    final buttonHeight = screenHeight * (isMobile ? 0.045 : (isTablet ? 0.05 : 0.055));
+    final logoutIconSize = isMobile ? 24.0 : (isTablet ? 28.0 : 32.0);
+
+    return Container(
+      padding: EdgeInsets.all(horizontalPadding),
+      child: Row(
         children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(movie.posterUrl!),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+          CircleAvatar(
+            radius: avatarRadius,
+            backgroundColor: Colors.grey[800],
+            backgroundImage: 
+               _currentUser?.photoUrl != null ?
+                NetworkImage(_currentUser!.photoUrl!) as ImageProvider : 
+                AssetImage("assets/Profile.png"),
           ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+          SizedBox(width: isMobile ? 10 : (isTablet ? 12 : 15)),
+          Expanded(
+            flex: isDesktop ? 3 : 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  movie.title,
-                  style: const TextStyle(
+                  _currentUser?.name ?? AppLocalizations.of(context)!.user,
+                  style: GoogleFonts.instrumentSans(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: nameFontSize,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: isMobile ? 2 : 4),
                 Text(
-                  movie.description,
-                  style: TextStyle(
+                  'ID: ${_currentUser?.id?.substring(0, 6) ?? AppLocalizations.of(context)!.noId}',
+                  style: GoogleFonts.instrumentSans(
                     color: Colors.grey[400],
-                    fontSize: 14,
+                    fontSize: idFontSize,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
+            ),
+          ),
+          SizedBox(width: isMobile ? 8 : 10),
+          Container(
+            width: buttonWidth,
+            height: buttonHeight,
+            child: ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UploadPhotoView(),
+                  ),
+                );
+                if (result != null && result is File) {
+                  setState(() {
+                    _profileImage = result;
+                  });
+                  _refreshProfileData();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.09),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 8 : (isTablet ? 10 : 12),
+                  vertical: isMobile ? 6 : (isTablet ? 8 : 10),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  AppLocalizations.of(context)!.addPhoto,
+                  style: GoogleFonts.instrumentSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: isMobile ? 10 : (isTablet ? 11 : 12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: isMobile ? 8 : 12),
+          GestureDetector(
+            onTap: _showLogoutDialog,
+            child: Container(
+              padding: EdgeInsets.all(isMobile ? 6 : 8),
+              child: Icon(
+                Icons.logout,
+                color: Colors.white70,
+                size: logoutIconSize,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+  
+  Widget _buildLikedSection(double screenWidth, bool isMobile, bool isTablet, bool isDesktop) {
+    final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.06 : 0.08));
+    final titleFontSize = isMobile ? 18.0 : (isTablet ? 20.0 : 24.0);
+    
+    // Responsive grid ayarları
+    int crossAxisCount;
+    double childAspectRatio;
+    double crossAxisSpacing;
+    double mainAxisSpacing;
+    
+    if (isDesktop) {
+      crossAxisCount = 4;
+      childAspectRatio = 0.7;
+      crossAxisSpacing = 16;
+      mainAxisSpacing = 20;
+    } else if (isTablet) {
+      crossAxisCount = 3;
+      childAspectRatio = 0.65;
+      crossAxisSpacing = 14;
+      mainAxisSpacing = 18;
+    } else {
+      crossAxisCount = 2;
+      childAspectRatio = 0.6;
+      crossAxisSpacing = 12;
+      mainAxisSpacing = 16;
+    }
 
-  // Profil verisini backend'den yenilemek için
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: Text(
+            AppLocalizations.of(context)!.myLikes,
+            style: GoogleFonts.instrumentSans(
+              color: Colors.white,
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(height: isMobile ? 12 : (isTablet ? 14 : 16)),
+        ProfileMovieCard(
+          favoriteMovies: _favoriteMovies,
+          isMoviesLoading: _isMoviesLoading,
+          moviesError: _moviesError,
+          horizontalPadding: horizontalPadding,
+          isMobile: isMobile,
+          isTablet: isTablet,
+          isDesktop: isDesktop,
+          screenWidth: screenWidth,
+        ),
+      ],
+    );
+  }
+
   Future<void> _refreshProfileData() async {
     final result = await AuthService.refreshProfile();
     if (mounted) {
@@ -459,7 +473,6 @@ class _ProfileViewState extends State<ProfileView> {
         setState(() {
           _currentUser = result['user'];
         });
-        _showSnackBar(result['message']);
       } else {
         _showSnackBar(result['message'], isError: true);
       }

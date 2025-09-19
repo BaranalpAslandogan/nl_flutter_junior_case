@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:jr_case_boilerplate/core/extensions/assets/app_icons_ext.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:jr_case_boilerplate/core/widgets/nav_bar/custom_nav_bar.dart';
 import 'package:jr_case_boilerplate/features/auth/services/auth_service.dart';
 import 'package:jr_case_boilerplate/features/auth/services/movie_service.dart';
-import 'package:jr_case_boilerplate/features/home/widgets/network_image.dart';
+import 'package:jr_case_boilerplate/features/home/widgets/home_movie_list_item.dart';
 import 'package:jr_case_boilerplate/features/profile/view/profile_view.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/movie_item_model.dart';
@@ -41,6 +41,30 @@ class _HomeViewState extends State<HomeView> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  // Responsive boyutları hesapla
+  Map<String, double> _getResponsiveSizes(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Ekran boyutuna göre kategori belirle
+    bool isSmallScreen = screenWidth < 360;
+    bool isMediumScreen = screenWidth >= 360 && screenWidth < 414;
+    bool isLargeScreen = screenWidth >= 414;
+    
+    return {
+      'logoSize': isSmallScreen ? 32 : isMediumScreen ? 36 : 40,
+      'titleFontSize': isSmallScreen ? 18 : isMediumScreen ? 20 : 22,
+      'descriptionFontSize': isSmallScreen ? 14 : isMediumScreen ? 15 : 16,
+      'bottomPadding': screenHeight * 0.02, // Ekran yüksekliğine göre
+      'logoBottomPosition': screenHeight * 0.20, // %22
+      'contentBottomPosition': screenHeight * 0.17, // %17
+      'heartBottomPosition': screenHeight * 0.25, // %23
+      'heartRightPosition': screenWidth * 0.028, // %2.8
+      'contentLeftPadding': screenWidth * 0.05, // %5
+      'contentRightPadding': screenWidth * 0.08, // %23 (kalp butonu için)
+    };
   }
 
   // Tüm verileri yükle
@@ -114,27 +138,6 @@ class _HomeViewState extends State<HomeView> {
         }
       }
 
-      // Favori filmler sonuçları
-      // if (favoritesResult['success']) {
-      //   final favoritesList = favoritesResult['movies'] as List;
-      //   final favoriteMovies = favoritesList.map((movieJson) => MovieItem.fromJson(movieJson)).toList();
-
-      //   setState(() {
-      //     _favoriteMovies = favoriteMovies;
-      //   });
-      // } else {
-      //   print('Favori filmler yüklenemedi: ${favoritesResult['message']}');
-        
-      //   // Unauthorized durumu kontrolü
-      //   if (favoritesResult['unauthorized'] == true) {
-      //     _handleUnauthorized();
-      //     return;
-      //   }
-      // }
-
-      // // İki listeyi karşılaştır ve isFavorite durumlarını güncelle
-      // _updateFavoriteStatus();
-
     } catch (e) {
       _showSnackBar('Filmler yüklenirken hata oluştu: ${e.toString()}', isError: true);
     } finally {
@@ -176,13 +179,6 @@ class _HomeViewState extends State<HomeView> {
       final result = await MovieService.toggleFavorite(favoriteId: movieId);
 
       if (result['success']) {
-        _showSnackBar(
-          newFavoriteStatus 
-            ? '${currentMovie.title} favorilere eklendi!'
-            : '${currentMovie.title} favorilerden çıkarıldı!',
-          isError: false,
-        );
-
         // Favori listeyi yeniden yükle
         await _loadFavoriteMovies();
       } else {
@@ -236,12 +232,92 @@ class _HomeViewState extends State<HomeView> {
 
   // Yetkisiz erişim durumunu handle et
   void _handleUnauthorized() {
-    _showSnackBar('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', isError: true);
-    
     // Login sayfasına yönlendir
     Navigator.pushReplacementNamed(context, '/login');
   }
 
+  // Açıklama detay dialogunu göster
+  void _showDescriptionDialog(String title, String description) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.8),
+      builder: (BuildContext context) {
+        final responsiveSizes = _getResponsiveSizes(context);
+        
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Başlık
+                Text(
+                  title,
+                  style: GoogleFonts.instrumentSans(
+                    color: Colors.white,
+                    fontSize: responsiveSizes['titleFontSize']! - 2,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Tam açıklama
+                SingleChildScrollView(
+                  child: Text(
+                    description,
+                    style: GoogleFonts.instrumentSans(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: responsiveSizes['descriptionFontSize'],
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                
+                SizedBox(height: 20),
+                
+                // Kapat butonu
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red.withOpacity(0.8),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Kapat',
+                      style: GoogleFonts.instrumentSans(
+                        color: Colors.white,
+                        fontSize: responsiveSizes['descriptionFontSize'],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // SnackBar göster
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -254,285 +330,169 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: Colors.red),
-              SizedBox(height: 16),
-              Text(
-                'Filmler yükleniyor...',
-                style: TextStyle(color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final responsiveSizes = _getResponsiveSizes(context);
+        
+        if (_isLoading) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: Colors.red),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    }
+            ),
+          );
+        }
 
-    // Film listesi boşsa
-    if (_movies.isEmpty) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.movie_outlined,
-                color: Colors.white,
-                size: 64,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Henüz film bulunmuyor',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
+        // Film listesi boşsa
+        if (_movies.isEmpty) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: constraints.maxWidth * 0.1,
                 ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _refreshMovies,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Yenile'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Tam ekran PageView
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentMovieIndex = index;
-              });
-            },
-            itemCount: _movies.length,
-            itemBuilder: (context, index) {
-              final movie = _movies[index];
-              return _buildMovieScreen(movie, index);
-            },
-          ),
-          
-          // Loading overlay
-          if (_isLoadingMovies)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: Colors.red),
-                    SizedBox(height: 16),
-                    Text(
-                      'Güncelleniyor...',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          
-          // Transparan Bottom Navbar - En üstte
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.black.withOpacity(0.4),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-              child: SafeArea(
-                child: CustomNavbar(
-                  currentIndex: _currentNavIndex,
-                  onTap: (index) {
-                    setState(() {
-                      _currentNavIndex = index;
-                    });
-          
-                    switch (index) {
-                      case 0:
-                        _showSnackBar('Anasayfa');
-                        break;
-                      case 1:
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ProfileView()),
-                        );
-                        break;
-                      default:
-                        _showSnackBar('Anasayfa');
-                        break;
-                    } 
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMovieScreen(MovieItem movie, int movieIndex) {
-     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image - tam ekran
-          CustomNetworkImage(
-            imageUrl: movie.posterUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-          
-          // Gradient overlay - daha yumuşak geçiş
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.7),
-                ],
-                stops: const [0.0, 0.4, 0.7, 1.0],
-              ),
-            ),
-          ),
-          
-          // Content overlay - Netflix logosu
-          Positioned(
-            bottom: 175, // Navbar için boşluk bırak
-            left: 20,
-            child: Container(
-              alignment: Alignment.topCenter,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: Image(image: Image.asset( 'assets/IconImage.png').image,
-              width: 40,
-              height: 40,
-            ),
-            ),
-          ),
-          
-          // Film bilgileri
-          Positioned(
-            bottom: 140,
-            left: 80,
-            right: 90, // Kalp butonu için alan bırak
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  movie.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 2),
-                        blurRadius: 4,
-                        color: Colors.black54,
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 8),
-                
-                // Film açıklaması
-                Text(
-                  movie.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    height: 1.4,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                        color: Colors.black54,
-                      ),
-                    ],
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          
-          // Kalp butonu - ayrı positioned
-          Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.230,
-            right: MediaQuery.of(context).size.width * 0.028,
-            child: FavoriteButton(
-              isLiked: movie.isFavorite ?? false,
-              onTap: () => _toggleFavorite(movie.id, movieIndex),
-            ),
-          ),
-          
-          // Pull to refresh indicator (üstte)
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: _refreshMovies,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
                     Icon(
-                      Icons.refresh,
-                      color: Colors.white.withOpacity(0.7),
-                      size: 20,
+                      Icons.movie_outlined,
+                      color: Colors.white,
+                      size: responsiveSizes['logoSize']! + 24,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(height: constraints.maxHeight * 0.02),
                     Text(
-                      'Yenilemek için tıklayın',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
+                      'Henüz film bulunmuyor',
+                      style: GoogleFonts.instrumentSans(
+                        color: Colors.white,
+                        fontSize: responsiveSizes['titleFontSize'],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.02),
+                    SizedBox(
+                      width: constraints.maxWidth * 0.4,
+                      child: ElevatedButton(
+                        onPressed: _refreshMovies,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: EdgeInsets.symmetric(
+                            vertical: constraints.maxHeight * 0.015,
+                          ),
+                        ),
+                        child: Text(
+                          'Yenile',
+                          style: TextStyle(
+                            fontSize: responsiveSizes['descriptionFontSize'],
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              // Tam ekran PageView
+              // PageView.builder(
+              //   controller: _pageController,
+              //   onPageChanged: (index) {
+              //     setState(() {
+              //       _currentMovieIndex = index;
+              //     });
+              //   },
+              //   itemCount: _movies.length,
+              //   itemBuilder: (context, index) {
+              //     final movie = _movies[index];
+              //     return _buildMovieScreen(movie, index, responsiveSizes, constraints);
+              //   },
+              // ),
+
+              HomeMovieListItem(
+                movies: _movies,
+                pageController: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentMovieIndex = index;
+                  });
+                },
+                onShowDescription: _showDescriptionDialog,
+                onToggleFavorite: _toggleFavorite,
+                responsiveSizes: responsiveSizes,
+                constraints: constraints,
+              ),
+              // Loading overlay
+              if (_isLoadingMovies)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: Colors.red),
+                      ],
+                    ),
+                  ),
+                ),
+              
+              // Transparan Bottom Navbar - En üstte
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.8),
+                        Colors.black.withOpacity(0.4),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: CustomNavbar(
+                      currentIndex: 0,
+                      onTap: (index) {
+                        setState(() {
+                          _currentNavIndex = index;
+                        });
+              
+                        switch (index) {
+                          case 0:
+                            break;
+                          case 1:
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ProfileView()),
+                            );
+                            break;
+                          default:
+                            break;
+                        } 
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

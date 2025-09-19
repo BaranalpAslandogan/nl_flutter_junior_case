@@ -2,10 +2,12 @@
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jr_case_boilerplate/l10n/app_localizations.dart';
 import 'dart:io';
 
-// Eklenen import
+// Localization import'u
 import '../../auth/services/auth_service.dart';
 
 class UploadPhotoView extends StatefulWidget {
@@ -27,6 +29,10 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
   }
 
   Future<void> _pickImage() async {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+
     try {
       showModalBottomSheet(
         context: context,
@@ -35,56 +41,62 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         builder: (context) => Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(isMobile ? 16 : (isTablet ? 20 : 24)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 40,
+                width: isMobile ? 35 : 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: Colors.grey[600],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Fotoğraf Seç',
-                style: TextStyle(
+              SizedBox(height: isMobile ? 16 : 20),
+              Text(
+                AppLocalizations.of(context)!.selectPhoto,
+                style: GoogleFonts.instrumentSans(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: isMobile ? 16 : (isTablet ? 18 : 20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isMobile ? 16 : 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildPickerOption(
                     icon: Icons.camera_alt,
-                    label: 'Kamera',
+                    label: AppLocalizations.of(context)!.camera,
                     onTap: () {
                       Navigator.pop(context);
                       _pickImageFromSource(ImageSource.camera);
                     },
+                    screenWidth: screenWidth,
+                    isMobile: isMobile,
+                    isTablet: isTablet,
                   ),
                   _buildPickerOption(
                     icon: Icons.photo_library,
-                    label: 'Galeri',
+                    label: AppLocalizations.of(context)!.gallery,
                     onTap: () {
                       Navigator.pop(context);
                       _pickImageFromSource(ImageSource.gallery);
                     },
+                    screenWidth: screenWidth,
+                    isMobile: isMobile,
+                    isTablet: isTablet,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isMobile ? 16 : 20),
             ],
           ),
         ),
       );
     } catch (e) {
-      _showSnackBar('Hata: $e', isError: true);
+      _showSnackBar('${AppLocalizations.of(context)!.errorPrefix}$e', isError: true);
     }
   }
 
@@ -92,22 +104,36 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required double screenWidth,
+    required bool isMobile,
+    required bool isTablet,
   }) {
+    final containerSize = screenWidth * (isMobile ? 0.35 : (isTablet ? 0.30 : 0.25));
+    final iconSize = isMobile ? 26.0 : (isTablet ? 30.0 : 34.0);
+    final fontSize = isMobile ? 12.0 : (isTablet ? 14.0 : 16.0);
+    final padding = isMobile ? 16.0 : (isTablet ? 18.0 : 20.0);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        width: containerSize,
+        height: containerSize * 0.8,
+        padding: EdgeInsets.all(padding),
         decoration: BoxDecoration(
           color: Colors.grey[800],
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 30),
-            const SizedBox(height: 8),
+            Icon(icon, color: Colors.white, size: iconSize),
+            SizedBox(height: isMobile ? 6 : 8),
             Text(
               label,
-              style: const TextStyle(color: Colors.white),
+              style: GoogleFonts.instrumentSans(
+                color: Colors.white,
+                fontSize: fontSize,
+              ),
             ),
           ],
         ),
@@ -130,13 +156,13 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
         });
       }
     } catch (e) {
-      _showSnackBar('Fotoğraf seçilirken hata oluştu', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.photoSelectionError, isError: true);
     }
   }
 
   Future<void> _uploadImage() async {
     if (_selectedImage == null) {
-      _showSnackBar('Lütfen önce bir fotoğraf seçin', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.pleaseSelectPhoto, isError: true);
       return;
     }
 
@@ -145,17 +171,15 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
     });
 
     try {
-      // Gerçek API çağrısını ekle
       final result = await AuthService.uploadPhoto(photoFile: _selectedImage!);
       
       if (result['success']) {
-        _showSnackBar('Fotoğraf başarıyla yüklendi!');
-        Navigator.pop(context, _selectedImage); // Başarılı olursa resim dosyasını geri döndür
+        Navigator.pop(context, _selectedImage);
       } else {
-        _showSnackBar(result['message'] ?? 'Yükleme sırasında hata oluştu', isError: true);
+        _showSnackBar(result['message'] ?? AppLocalizations.of(context)!.uploadError, isError: true);
       }
     } catch (e) {
-      _showSnackBar('Yükleme sırasında hata oluştu', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.uploadError, isError: true);
     } finally {
       setState(() {
         _isUploading = false;
@@ -175,6 +199,23 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
+    
+    // Responsive breakpoints
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final isDesktop = screenWidth >= 1024;
+
+    // Responsive değerler
+    final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.08 : 0.12));
+    final verticalPadding = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
+    final iconContainerSize = isMobile ? 70.0 : (isTablet ? 80.0 : 90.0);
+    final photoContainerSize = screenWidth * (isMobile ? 0.55 : (isTablet ? 0.45 : 0.35));
+    final titleFontSize = isMobile ? 22.0 : (isTablet ? 26.0 : 30.0);
+    final subtitleFontSize = isMobile ? 13.0 : (isTablet ? 15.0 : 17.0);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Container(
@@ -183,66 +224,79 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
           gradient: RadialGradient(
             tileMode: TileMode.clamp,
             center: Alignment.topCenter,
-            radius: 1.6,
+            radius: 2,
             colors: [
-              Color(0xFFAF0810 ),
-              Color(0xFF1F0103),
+              Color.fromARGB(255, 216, 5, 16),
+              Color.fromARGB(255, 158, 12, 22),
+              Color.fromARGB(255, 53, 5, 5),
               Color(0xFF090909),
             ],
-            stops: [0.0, 0.3, 1.0],
+            stops: [0.0, 0.1, 0.2, 0.9],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(screenWidth, isMobile, isTablet, isDesktop),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Column(
                     children: [
-                      const SizedBox(height: 40),
+                      SizedBox(height: screenHeight * (isMobile ? 0.05 : (isTablet ? 0.06 : 0.07))),
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: iconContainerSize,
+                        height: iconContainerSize,
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.4),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.white,
+                        child: Image.asset(
+                          'assets/Profile-fill.png',
+                          fit: BoxFit.contain,
+                          width: iconContainerSize * 0.4,
+                          height: iconContainerSize * 0.4,
+                          color: Colors.white.withOpacity(0.7),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Fotoğraf Yükle',
-                        style: TextStyle(
+                      SizedBox(height: isMobile ? 20 : (isTablet ? 24 : 28)),
+                      Text(
+                        AppLocalizations.of(context)!.uploadPhoto,
+                        style: GoogleFonts.instrumentSans(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: titleFontSize,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Profil fotoğrafı için görsel\nyükleyebilirsin',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                          height: 1.4,
+                      SizedBox(height: isMobile ? 6 : (isTablet ? 8 : 10)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                        child: Text(
+                          AppLocalizations.of(context)!.uploadPhotoSubtitle,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.instrumentSans(
+                            color: Colors.grey[400],
+                            fontSize: subtitleFontSize,
+                            height: 1.4,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: screenHeight * (isMobile ? 0.05 : (isTablet ? 0.06 : 0.07))),
                       GestureDetector(
                         onTap: _pickImage,
                         child: _selectedImage != null
                             ? Container(
-                                width: 200,
-                                height: 200,
+                                width: photoContainerSize,
+                                height: photoContainerSize,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
                                   image: DecorationImage(
                                     image: FileImage(_selectedImage!),
                                     fit: BoxFit.cover,
@@ -250,8 +304,8 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                                 ),
                               )
                             : Container(
-                                width: 200,
-                                height: 200,
+                                width: photoContainerSize,
+                                height: photoContainerSize,
                                 decoration: BoxDecoration(
                                   color: Colors.grey[900],
                                   borderRadius: BorderRadius.circular(20),
@@ -260,26 +314,28 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                                   options: RoundedRectDottedBorderOptions(
                                     color: Colors.grey[700]!,
                                     dashPattern: [10, 5],
-                                    strokeWidth: 1,
-                                    padding: EdgeInsets.all(16),
+                                    strokeWidth: isMobile ? 1 : (isTablet ? 1.5 : 2),
+                                    padding: EdgeInsets.all(isMobile ? 12 : (isTablet ? 16 : 20)),
                                     radius: Radius.circular(20),
                                   ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.add,
-                                      size: 40,
-                                      color: Colors.white,
+                                  child: Center(
+                                    child: Image.asset(
+                                      'assets/Plus.png',
+                                      fit: BoxFit.contain,
+                                      width: photoContainerSize * 0.2,
+                                      height: photoContainerSize * 0.2,
+                                      color: Colors.white.withOpacity(0.7),
                                     ),
                                   ),
                                 ),
                               ),
                       ),
                       if (_selectedImage != null) ...[
-                        const SizedBox(height: 30),
+                        SizedBox(height: isMobile ? 24 : (isTablet ? 28 : 32)),
                         GestureDetector(
                           onTap: _discardImage,
                           child: Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(isMobile ? 6 : (isTablet ? 8 : 10)),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Colors.grey[700]!,
@@ -289,10 +345,10 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                               color: Colors.transparent,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.close,
                               color: Colors.white70,
-                              size: 30,
+                              size: isMobile ? 26 : (isTablet ? 30 : 34),
                             ),
                           ),
                         ),
@@ -311,48 +367,50 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
                                 foregroundColor: const Color(0xFFFFFFFF),
                                 disabledBackgroundColor: const Color(0xFFCC0000).withOpacity(0.5),
                                 disabledForegroundColor: const Color(0xFFFFFFFF).withOpacity(0.5),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: isMobile ? 14 : (isTablet ? 16 : 18),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
                               child: _isUploading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
+                                  ? SizedBox(
+                                      width: isMobile ? 18 : (isTablet ? 20 : 22),
+                                      height: isMobile ? 18 : (isTablet ? 20 : 22),
                                       child: CircularProgressIndicator(
                                         color: Colors.white,
-                                        strokeWidth: 2,
+                                        strokeWidth: isMobile ? 2 : 2.5,
                                       ),
                                     )
                                   : Text(
-                                      'Devam Et',
-                                      style: TextStyle(
+                                      AppLocalizations.of(context)!.continueText,
+                                      style: GoogleFonts.instrumentSans(
                                         color: _selectedImage != null ? Colors.white : Colors.white54,
-                                        fontSize: 16,
+                                        fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: isMobile ? 12 : (isTablet ? 14 : 16)),
                           SizedBox(
                             width: double.infinity,
                             child: TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
-                              child: const Text(
-                                'Atla',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(context)!.skip,
+                                style: GoogleFonts.instrumentSans(
                                   color: Colors.white,
-                                  fontSize: 16,
+                                  fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: isMobile ? 16 : (isTablet ? 18 : 20)),
                         ],
                       ),
                     ],
@@ -366,39 +424,57 @@ class _UploadPhotoViewState extends State<UploadPhotoView> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(double screenWidth, bool isMobile, bool isTablet, bool isDesktop) {
+    final horizontalPadding = screenWidth * (isMobile ? 0.05 : (isTablet ? 0.08 : 0.12));
+    final verticalPadding = isMobile ? 12.0 : (isTablet ? 16.0 : 20.0);
+    final titleFontSize = isMobile ? 18.0 : (isTablet ? 20.0 : 22.0);
+    final iconSize = isMobile ? 18.0 : (isTablet ? 20.0 : 22.0);
+    final buttonSize = isMobile ? 40.0 : (isTablet ? 44.0 : 48.0);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () {
               Navigator.pop(context);
             },
             child: Container(
-              padding: const EdgeInsets.all(8),
+              width: buttonSize,
+              height: buttonSize,
+              padding: EdgeInsets.all(isMobile ? 10 : (isTablet ? 12 : 14)),
               decoration: BoxDecoration(
-                color: Colors.grey[800],
-                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey[700]!,
+                  width: 1,
+                  style: BorderStyle.solid,
+                ),
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: const Icon(
-                Icons.arrow_back,
+              child: Image.asset(
+                "assets/Arrow.png",
                 color: Colors.white,
-                size: 20,
+                width: iconSize,
+                height: iconSize,
               ),
             ),
           ),
-          const SizedBox(width: 16),
-          const Text(
-            'Profil Detayı',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          
+          Expanded(
+            child: Center(
+              child: Text(
+                AppLocalizations.of(context)!.profileDetail,
+                style: GoogleFonts.instrumentSans(
+                  color: Colors.white,
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
+          
+          SizedBox(width: buttonSize), 
         ],
       ),
     );

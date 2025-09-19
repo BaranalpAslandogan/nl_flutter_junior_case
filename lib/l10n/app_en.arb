@@ -1,0 +1,347 @@
+{
+  "@@locale": "en",
+  "appTitle": "Shartflix",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  
+  "register": "Register",
+  "@register": {
+    "description": "Register button text"
+  },
+  
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  
+  "name": "Name",
+  "@name": {
+    "description": "Name field label"
+  },
+  
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
+  
+  "forgotPassword": "Forgot Password",
+  "@forgotPassword": {
+    "description": "Forgot password link text"
+  },
+  
+  "loginTitle": "Login",
+  "@loginTitle": {
+    "description": "Login page title"
+  },
+  
+  "loginSubtitle": "Login with your credentials",
+  "@loginSubtitle": {
+    "description": "Login page subtitle"
+  },
+  
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create account title"
+  },
+  
+  "createAccountSubtitle": "Register by entering user information",
+  "@createAccountSubtitle": {
+    "description": "Create account subtitle"
+  },
+  
+  "dontHaveAccount": "Don't have an account? ",
+  "@dontHaveAccount": {
+    "description": "Text before register link"
+  },
+  
+  "alreadyHaveAccount": "Already have an account? ",
+  "@alreadyHaveAccount": {
+    "description": "Text before login link"
+  },
+  
+  "or": "or",
+  "@or": {
+    "description": "Or text between options"
+  },
+  
+  "emailRequired": "Email is required",
+  "@emailRequired": {
+    "description": "Email required validation message"
+  },
+  
+  "validEmailRequired": "Please enter a valid email address",
+  "@validEmailRequired": {
+    "description": "Valid email validation message"
+  },
+  
+  "passwordRequired": "Password is required",
+  "@passwordRequired": {
+    "description": "Password required validation message"
+  },
+  
+  "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": {
+    "description": "Password minimum length validation"
+  },
+  
+  "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter and one number",
+  "@passwordComplexity": {
+    "description": "Password complexity validation"
+  },
+  
+  "confirmPasswordRequired": "Password confirmation is required",
+  "@confirmPasswordRequired": {
+    "description": "Confirm password required validation"
+  },
+  
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Passwords mismatch validation"
+  },
+  
+  "nameRequired": "Name is required",
+  "@nameRequired": {
+    "description": "Name required validation"
+  },
+  
+  "nameMinLength": "Name must be at least 2 characters",
+  "@nameMinLength": {
+    "description": "Name minimum length validation"
+  },
+  
+  "agreeToTerms": "I have read and agree to the Terms of Use and Privacy Policy.",
+  "@agreeToTerms": {
+    "description": "Terms agreement checkbox text"
+  },
+  
+  "mustAgreeToTerms": "You must agree to the terms of use",
+  "@mustAgreeToTerms": {
+    "description": "Terms agreement validation message"
+  },
+  
+  "home": "Home",
+  "@home": {
+    "description": "Home navigation label"
+  },
+  
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile navigation label"
+  },
+  
+  "profileDetail": "Profile Detail",
+  "@profileDetail": {
+    "description": "Profile detail page title"
+  },
+  
+  "uploadPhoto": "Upload Photo",
+  "@uploadPhoto": {
+    "description": "Upload photo title"
+  },
+  
+  "uploadPhotoSubtitle": "You can upload an image\nfor your profile photo",
+  "@uploadPhotoSubtitle": {
+    "description": "Upload photo subtitle"
+  },
+  
+  "selectPhoto": "Select Photo",
+  "@selectPhoto": {
+    "description": "Select photo modal title"
+  },
+  
+  "camera": "Camera",
+  "@camera": {
+    "description": "Camera option text"
+  },
+  
+  "gallery": "Gallery",
+  "@gallery": {
+    "description": "Gallery option text"
+  },
+  
+  "continueText": "Continue",
+  "@continueText": {
+    "description": "Continue button text"
+  },
+  
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  
+  "addPhoto": "Add Photo",
+  "@addPhoto": {
+    "description": "Add photo button text"
+  },
+  
+  "myLikes": "My Likes",
+  "@myLikes": {
+    "description": "My likes section title"
+  },
+  
+  "noFavoriteMovies": "No favorite movies yet.",
+  "@noFavoriteMovies": {
+    "description": "No favorite movies message"
+  },
+  
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button text"
+  },
+  
+  "logoutConfirmation": "Are you sure you want to logout?",
+  "@logoutConfirmation": {
+    "description": "Logout confirmation message"
+  },
+  
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  
+  "limitedOffer": "Limited Offer",
+  "@limitedOffer": {
+    "description": "Limited offer button text"
+  },
+  
+  "limitedOfferDescription": "Choose a token package to earn bonus and unlock new chapters!",
+  "@limitedOfferDescription": {
+    "description": "Limited offer description"
+  },
+  
+  "bonusesYouWillGet": "Bonuses You Will Get",
+  "@bonusesYouWillGet": {
+    "description": "Bonuses section title"
+  },
+  
+  "premiumAccount": "Premium\nAccount",
+  "@premiumAccount": {
+    "description": "Premium account bonus"
+  },
+  
+  "more": "More\nLikes",
+  "@more": {
+    "description": "More likes bonus"
+  },
+  
+  "priority": "Priority\nQueue",
+  "@priority": {
+    "description": "Priority queue bonus"
+  },
+  
+  "moreVariety": "More\nVariety",
+  "@moreVariety": {
+    "description": "More variety bonus"
+  },
+  
+  "selectTokenPackage": "Select a token package to unlock",
+  "@selectTokenPackage": {
+    "description": "Token package selection instruction"
+  },
+  
+  "tokens": "Tokens",
+  "@tokens": {
+    "description": "Tokens text"
+  },
+  
+  "weekly": "weekly",
+  "@weekly": {
+    "description": "Weekly billing text"
+  },
+  
+  "showAllTokens": "Show All Tokens",
+  "@showAllTokens": {
+    "description": "Show all tokens button"
+  },
+  
+  "allTokenPackagesSoon": "All token packages coming soon!",
+  "@allTokenPackagesSoon": {
+    "description": "All token packages snackbar message"
+  },
+  
+  "noMoviesYet": "No movies found yet",
+  "@noMoviesYet": {
+    "description": "No movies message"
+  },
+  
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh button text"
+  },
+  
+  "user": "User",
+  "@user": {
+    "description": "Default user name"
+  },
+  
+  "noId": "No ID",
+  "@noId": {
+    "description": "No ID text"
+  },
+  
+  "errorPrefix": "Error: ",
+  "@errorPrefix": {
+    "description": "Error message prefix"
+  },
+  
+  "photoSelectionError": "Error occurred while selecting photo",
+  "@photoSelectionError": {
+    "description": "Photo selection error message"
+  },
+  
+  "pleaseSelectPhoto": "Please select a photo first",
+  "@pleaseSelectPhoto": {
+    "description": "Please select photo message"
+  },
+  
+  "uploadError": "Error occurred during upload",
+  "@uploadError": {
+    "description": "Upload error message"
+  },
+  
+  "unexpectedError": "An unexpected error occurred: {error}",
+  "@unexpectedError": {
+    "description": "Unexpected error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "connectionError": "Connection error: {error}",
+  "@connectionError": {
+    "description": "Connection error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "loginSuccessful": "Login successful!",
+  "@loginSuccessful": {
+    "description": "Login success message"
+  },
+  
+  "registrationSuccessful": "Registration successful! You can now login.",
+  "@registrationSuccessful": {
+    "description": "Registration success message"
+  },
+  
+  "photoUploadSuccessful": "Photo uploaded successfully!",
+  "@photoUploadSuccessful": {
+    "description": "Photo upload success message"
+  }
+}
